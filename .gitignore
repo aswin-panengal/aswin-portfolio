@@ -1,0 +1,12 @@
+# Python Virtual Environment
+.env_aswin/
+__pycache__/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+
+# Secret Keys (NEVER PUSH THESE)
+.env
+.env.local
