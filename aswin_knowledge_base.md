@@ -9,10 +9,10 @@
 - **Location:** Kerala, India  
 - **Education:** MCA (Final Year), Pondicherry University (GPA: 7.3)  
 - **Background:** BCA, Calicut University (GPA: 6.5)  
-- **Contact:** aswinpanengal@gmail.com  
-- **LinkedIn:** linkedin.com/in/aswinpanengal  
-- **GitHub:** github.com/aswin-panengal  
-
+- **Contact:** [aswinpanengal@gmail.com](mailto:aswinpanengal@gmail.com)
+- **LinkedIn:** [linkedin.com/in/aswin-panengal](https://www.linkedin.com/in/aswin-panengal)  
+- **GitHub:** [github.com/aswin-panengal](https://github.com/aswin-panengal)
+- **Upwork**: [Upwork Profile](https://www.upwork.com/freelancers/~your_id_here)
 ---
 
 ## SECTION 2: PROFESSIONAL SUMMARY
