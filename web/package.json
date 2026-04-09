@@ -1,0 +1,32 @@
+{
+  "name": "aswin-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@ai-sdk/google": "^3.0.60",
+    "@ai-sdk/react": "^3.0.155",
+    "@google/generative-ai": "^0.24.1",
+    "@qdrant/js-client-rest": "^1.17.0",
+    "@tailwindcss/postcss": "^4.2.2",
+    "ai": "^6.0.153",
+    "framer-motion": "^12.38.0",
+    "lucide-react": "^1.7.0",
+    "next": "latest",
+    "postcss": "^8.5.9",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-markdown": "^10.1.0",
+    "tailwindcss": "^4.2.2"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.2",
+    "@types/react": "^19.2.14",
+    "typescript": "latest"
+  }
+}
