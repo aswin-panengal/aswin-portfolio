@@ -42,7 +42,7 @@ const PROJECTS = [
     title: "SmartOps (Dual-Engine AI Platform)",
     shortDesc: "Production-grade RAG and analytical engine powered by LangGraph, FastAPI, and Qdrant.",
     longDesc: "A unified conversational interface that intelligently routes queries between a PDF semantic search engine and a CSV pandas-generation engine. It features stateful conversation memory with automatic summarization to prevent token limits. The entire FastAPI, Qdrant, and n8n automation stack is containerized with Docker and auto-deployed via Render.",
-    stack: ["FastAPI", "LangGraph", "Qdrant", "Gemini 2.0 Flash", "Docker", "n8n"],
+    stack: ["FastAPI", "LangGraph", "Qdrant", "Gemini API", "Docker", "n8n"],
     icon: Brain,
     color: "text-emerald-400",
     github: "https://github.com/aswin-panengal/SmartOps",

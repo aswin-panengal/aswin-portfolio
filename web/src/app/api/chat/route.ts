@@ -49,7 +49,7 @@ export async function POST(req: Request) {
         5. If the user greets you, reply warmly and offer help with his skills, projects, or experience.`;
         // 4. Generate the Stream
         const result = await streamText({
-            model: google('gemini-2.5-flash-lite'),
+            model: google('gemini-3-flash-preview'),
             system: systemPrompt,
             messages: messages,
         });
