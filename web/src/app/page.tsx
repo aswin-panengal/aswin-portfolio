@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Terminal, Code2, Database, MessageCircle, X, User, Briefcase, Mail, ExternalLink, GitBranch, FileText, TrendingUp, Brain, Play } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
+import { useChat } from "ai/react";
+
 // Navigation setup
 const TABS = [
   { id: "about", label: "About", icon: User },
@@ -55,9 +57,17 @@ export default function Portfolio() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<any | null>(null);
 
-  const [messages, setMessages] = useState<any[]>([]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  // Vercel AI SDK useChat hook (replaces manual fetch logic)
+  const { messages, input, handleInputChange, handleSubmit, isLoading, status, error } = useChat({
+    api: '/api/chat',
+    streamProtocol: 'data',
+    onError: (error) => {
+      console.error('Chat hook error:', error);
+    },
+    onResponse: (response) => {
+      console.log('Chat API response status:', response.status);
+    },
+  });
 
   // Auto-Scroll Logic
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -399,8 +409,17 @@ export default function Portfolio() {
                         components={{
                           strong: ({ node, ...props }) => <span className="font-bold text-white" {...props} />,
                           p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
-                          ul: ({ node, ...props }) => <ul className="list-disc ml-4 mb-2" {...props} />,
-                          li: ({ node, ...props }) => <li className="mb-1" {...props} />
+                          ul: ({ node, ...props }) => <ul className="list-disc ml-4 mb-2 space-y-1" {...props} />,
+                          li: ({ node, ...props }) => <li className="mb-1 text-zinc-200" {...props} />,
+                          // THIS IS THE MAGIC LINE that makes AI links open in a new tab with purple styling!
+                          a: ({ node, ...props }) => (
+                            <a
+                              {...props}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-purple-400 hover:text-purple-300 underline underline-offset-2 transition-colors"
+                            />
+                          )
                         }}
                       >
                         {m.content}
@@ -409,7 +428,14 @@ export default function Portfolio() {
                   </div>
                 </div>
               ))}
-              {isLoading && (
+
+              {/* Only show loading bubble if the AI is thinking, not while it's actively typing */}
+              {status === 'error' && error && (
+                <div className="rounded-2xl border border-red-500/50 bg-red-500/10 p-3 text-sm text-red-200">
+                  {error.message || 'Something went wrong with the chat. Check the console for details.'}
+                </div>
+              )}
+              {isLoading && messages.length > 0 && messages[messages.length - 1].role === 'user' && (
                 <div className="flex justify-start">
                   <div className="px-4 py-3 rounded-2xl bg-zinc-800/50 border border-zinc-700/50 flex gap-1 items-center h-[40px]">
                     <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce"></span>
@@ -424,58 +450,20 @@ export default function Portfolio() {
 
             <div className="p-4 bg-zinc-900/30 border-t border-zinc-800/50">
               <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  if (!input.trim() || isLoading) return;
-
-                  const userMessage = { id: Date.now().toString(), role: 'user' as const, content: input };
-
-                  setMessages([...messages, userMessage]);
-                  setInput('');
-                  setIsLoading(true);
-
-                  try {
-                    const response = await fetch('/api/chat', {
-                      method: 'POST',
-                      body: JSON.stringify({ messages: [...messages, userMessage] }),
-                    });
-
-                    if (!response.ok) throw new Error('Failed to send');
-
-                    const reader = response.body?.getReader();
-                    const decoder = new TextDecoder();
-                    let assistantMessage = { id: (Date.now() + 1).toString(), role: 'assistant' as const, content: '' };
-
-                    setMessages((prev) => [...prev, assistantMessage]);
-
-                    while (true) {
-                      const { done, value } = await reader!.read();
-                      if (done) break;
-                      const chunk = decoder.decode(value);
-                      assistantMessage.content += chunk;
-
-                      setMessages((prev) => [
-                        ...prev.slice(0, -1),
-                        { ...assistantMessage }
-                      ]);
-                    }
-                  } catch (err) {
-                    console.error("Manual Chat Error:", err);
-                  } finally {
-                    setIsLoading(false);
-                  }
-                }}
+                onSubmit={handleSubmit}
                 className="relative flex items-center"
               >
                 <input
                   value={input}
-                  onChange={(e) => setInput(e.target.value)}
+                  onChange={handleInputChange}
                   placeholder="Ask a question..."
-                  className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-2xl py-3 pl-4 pr-12 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all"
+                  disabled={isLoading}
+                  className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-2xl py-3 pl-4 pr-12 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all disabled:opacity-50"
                 />
                 <button
                   type="submit"
-                  className="absolute right-2 p-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl transition-colors"
+                  disabled={isLoading || !input.trim()}
+                  className="absolute right-2 p-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl transition-colors disabled:opacity-50"
                 >
                   <Send className="w-4 h-4" />
                 </button>

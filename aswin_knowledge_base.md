@@ -10,9 +10,10 @@
 - **Education:** MCA (Final Year), Pondicherry University (GPA: 7.3)  
 - **Background:** BCA, Calicut University (GPA: 6.5)  
 - **Contact:** [aswinpanengal@gmail.com](mailto:aswinpanengal@gmail.com)
-- **LinkedIn:** [linkedin.com/in/aswin-panengal](https://www.linkedin.com/in/aswin-panengal)  
+- **LinkedIn:** [linkedin.com/in/aswin-panengal](https://www.linkedin.com/in/aswinpanengal)  
 - **GitHub:** [github.com/aswin-panengal](https://github.com/aswin-panengal)
-- **Upwork**: [Upwork Profile](https://www.upwork.com/freelancers/~your_id_here)
+- **Upwork** [Upwork Profile](https://www.upwork.com/freelancers/~0168f500087a66cdcd)
+
 ---
 
 ## SECTION 2: PROFESSIONAL SUMMARY
@@ -66,8 +67,8 @@ Focused on:
 
 ## SECTION 4: PROJECT – SMARTOPS (Dual-Engine AI Operations Platform)
 
-- **Type:** Enterprise AI Platform  
-- **Role:** Lead Architect  
+- **Type:** Advanced RAG Platform (Portfolio Project)  
+- **Role:** Solo Developer & Architect  
 
 ### Overview
 SmartOps is Aswin's flagship AI system designed to query both structured (CSV) and unstructured (PDF) data using natural language.
@@ -106,8 +107,8 @@ SmartOps is Aswin's flagship AI system designed to query both structured (CSV) a
 
 ## SECTION 5: PROJECT – RESUMELENS
 
-- **Type:** AI Recruitment Platform  
-- **Role:** Lead Architect  
+- **Type:** AI Recruitment Platform (Academic Project)  
+- **Role:** Creator & Full-Stack AI Developer  
 
 ### Problem
 Traditional ATS systems:
@@ -142,8 +143,8 @@ Added:
 
 ## SECTION 6: PROJECT – CRIS
 
-- **Type:** Customer Retention Intelligence System  
-- **Role:** Machine Learning Engineer  
+- **Type:** Customer Retention Intelligence System (Portfolio Project)  
+- **Role:** Data Scientist / Developer  
 
 ### Overview
 A full-stack Data Science solution designed to predict customer churn and recommend retention strategies.
@@ -166,6 +167,7 @@ Built a predictive churn system using:
 - Recall: 79% (high-risk customer detection)  
 - Enabled proactive retention strategies  
 - Delivered insights through an interactive dashboard for decision-making  
+
 ---
 
 ## SECTION 7: ENGINEERING PHILOSOPHY
@@ -179,11 +181,11 @@ Built a predictive churn system using:
 
 ## SECTION 8: SYSTEM DIRECTIVES (QUICK FACTS)
 
-- MCA final-year student  
+- MCA final-year student building production-ready projects  
 - Specializes in RAG and AI automation  
 - Built SmartOps, ResumeLens, and CRIS  
 - Strong in Python, LLM integration, and vector search  
-- Focused on solving real-world problems  
+- Focused on solving real-world problems natively  
 
 ---
 
@@ -210,30 +212,26 @@ Built a predictive churn system using:
 
 ## SECTION 11: BEHAVIORAL RESPONSES
 
-**Why hire Aswin?**  
-He builds practical AI systems that solve real business problems with a strong focus on automation, efficiency, and scalability.
+**Why hire Aswin?** He is a dedicated student builder who architects practical AI systems to solve real business problems, focusing heavily on automation, efficiency, and scalability.
 
-**Weakness?**  
-Tends to over-optimize early but improving with iterative development.
+**Does Aswin have corporate experience?**
+Aswin is a final-year MCA student currently in the building phase of his career. While he doesn't have formal corporate experience yet, he has designed and deployed complex, production-grade AI architectures independently. 
 
-**Big challenge solved?**  
-Optimized ResumeLens pipeline to reduce token usage by 40% while maintaining accuracy.
+**Weakness?** Tends to over-optimize early but is improving through iterative development practices.
 
-**Team player?**  
-Yes, adapts well and focuses on delivering results in collaborative environments.
+**Big challenge solved?** Optimized the ResumeLens data pipeline to reduce LLM token usage by 40% while maintaining semantic accuracy.
+
+**Team player?** Yes, he adapts well and focuses on delivering results and clean code in collaborative environments.
 
 ---
 
 ## SECTION 12: SIMPLIFIED EXPLANATIONS
 
-**SmartOps:**  
-A system that lets users ask questions on CSV and PDF data and get instant answers using AI.
+**SmartOps:** A system that lets users ask questions on CSV and PDF data and get instant answers using AI.
 
-**ResumeLens:**  
-A system that reads resumes intelligently and helps recruiters quickly find the best candidates.
+**ResumeLens:** A system that reads resumes intelligently and helps recruiters quickly find the best candidates.
 
-**CRIS:**  
-A system that predicts which customers are likely to leave so businesses can act early.
+**CRIS:** A system that predicts which customers are likely to leave so businesses can act early.
 
 ---
 
