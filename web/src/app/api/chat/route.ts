@@ -84,7 +84,7 @@ Guidelines:
             model: groq('llama-3.1-8b-instant'),
             system: systemPrompt,
             messages: normalizedMessages,
-            maxTokens: 300, // Limit response length for speed
+            maxTokens: 1000, // Limit response length for speed
         });
 
         return result.toDataStreamResponse({
