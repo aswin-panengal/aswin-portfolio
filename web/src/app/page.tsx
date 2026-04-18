@@ -214,7 +214,7 @@ export default function Portfolio() {
             </p>
 
             <div className="flex flex-wrap justify-center gap-4 mb-12">
-              <a href="mailto:aswinpanengal@gmail.com" className="flex items-center gap-2 px-6 py-3 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-red-500/20 hover:border-red-500/50 transition-colors text-white">
+              <a href="https://mail.google.com/mail/?view=cm&fs=1&to=aswinpanengal@gmail.com" target="_blank" rel="noreferrer" className="flex items-center gap-2 px-6 py-3 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-red-500/20 hover:border-red-500/50 transition-colors text-white">
                 <Mail className="w-5 h-5" /> Gmail
               </a>
               <a href="https://www.linkedin.com/in/aswinpanengal/" target="_blank" rel="noreferrer" className="flex items-center gap-2 px-6 py-3 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-[#0A66C2]/20 hover:border-[#0A66C2]/50 transition-colors text-white">
