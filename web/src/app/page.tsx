@@ -149,10 +149,6 @@ export default function Portfolio() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800 mb-8 w-fit">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                <span className="text-sm font-medium text-zinc-300">Open for Freelance & Full-Time</span>
-              </div>
 
               <h1 className="text-6xl md:text-8xl font-bold tracking-tight text-white mb-6">
                 Hi, I'm <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-500">Aswin.</span>
@@ -214,11 +210,11 @@ export default function Portfolio() {
           >
             <h2 className="text-4xl font-bold text-white mb-6">Let's build something.</h2>
             <p className="text-xl text-zinc-400 mb-12">
-              Whether it is a full-time role or a freelance data project, my inbox is open.
+              Whether it is a full-time role or a freelanc project, my inbox is open.
             </p>
 
             <div className="flex flex-wrap justify-center gap-4 mb-12">
-              <a href="mailto:aswinpanengal@gmail.com" className="flex items-center gap-2 px-6 py-3 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-zinc-800 transition-colors text-white">
+              <a href="mailto:aswinpanengal@gmail.com" className="flex items-center gap-2 px-6 py-3 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-red-500/20 hover:border-red-500/50 transition-colors text-white">
                 <Mail className="w-5 h-5" /> Gmail
               </a>
               <a href="https://www.linkedin.com/in/aswinpanengal/" target="_blank" rel="noreferrer" className="flex items-center gap-2 px-6 py-3 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-[#0A66C2]/20 hover:border-[#0A66C2]/50 transition-colors text-white">
@@ -233,7 +229,7 @@ export default function Portfolio() {
               </a>
             </div>
 
-            <p className="text-zinc-600 mb-4">Or, ask my AI instead:</p>
+            <p className="text-zinc-600 mb-4">Want to know more about me? Talk to My AI.</p>
             <button
               onClick={() => setIsChatOpen(true)}
               className="px-8 py-4 bg-white text-black rounded-full font-semibold hover:scale-105 transition-transform flex items-center gap-3 mx-auto"

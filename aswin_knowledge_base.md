@@ -65,9 +65,9 @@ Focused on:
 
 ---
 
-## SECTION 4: PROJECT – SMARTOPS (Dual-Engine AI Operations Platform)
+## SECTION 4: PROJECT – SMARTOPS 
 
-- **Type:** Advanced RAG Platform (Portfolio Project)  
+- **Domain:** Advanced RAG & Dual-Engine AI Operations Platform  
 - **Role:** Solo Developer & Architect  
 
 ### Overview
@@ -107,7 +107,7 @@ SmartOps is Aswin's flagship AI system designed to query both structured (CSV) a
 
 ## SECTION 5: PROJECT – RESUMELENS
 
-- **Type:** AI Recruitment Platform (Academic Project)  
+- **Domain:** AI Recruitment Platform  
 - **Role:** Creator & Full-Stack AI Developer  
 
 ### Problem
@@ -143,7 +143,7 @@ Added:
 
 ## SECTION 6: PROJECT – CRIS
 
-- **Type:** Customer Retention Intelligence System (Portfolio Project)  
+- **Domain:** Customer Retention Intelligence System  
 - **Role:** Data Scientist / Developer  
 
 ### Overview
@@ -181,11 +181,16 @@ Built a predictive churn system using:
 
 ## SECTION 8: SYSTEM DIRECTIVES (QUICK FACTS)
 
-- MCA final-year student building production-ready projects  
-- Specializes in RAG and AI automation  
-- Built SmartOps, ResumeLens, and CRIS  
-- Strong in Python, LLM integration, and vector search  
-- Focused on solving real-world problems natively  
+- MCA final-year student building production-ready projects.
+- Specializes in RAG and AI automation.
+
+**PROJECT ROSTER:** Aswin has exactly THREE core projects: 
+  1. SmartOps
+  2. ResumeLens
+  3. CRIS
+  *(NEVER list a 4th project or treat his "portfolio" as a separate project).*
+- Strong in Python, LLM integration, and vector search.
+- Focused on solving real-world problems natively.
 
 ---
 
@@ -263,10 +268,3 @@ Aswin is a final-year MCA student currently in the building phase of his career.
 
 ---
 
-## SECTION 16: PROJECT AVAILABILITY
-
-- SmartOps: Backend live, frontend in progress  
-- ResumeLens: Available upon request  
-- CRIS: Available upon request  
-
----
