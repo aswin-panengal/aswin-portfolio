@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Terminal, Code2, Database, MessageCircle, X, User, Briefcase, Mail, ExternalLink, GitBranch, FileText, TrendingUp, Brain, Play } from "lucide-react";
+import { Send, Terminal, Code2, Database, MessageCircle, X, User, Briefcase, Mail, ExternalLink, GitBranch, FileText, TrendingUp, Brain, Play, Check } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import { useChat } from "ai/react";
 
@@ -35,10 +35,9 @@ const PROJECTS = [
     stack: ["Python", "Pandas", "Scikit-learn", "Random Forest", "SMOTE", "Streamlit"],
     icon: TrendingUp,
     color: "text-blue-400",
-    github: "https://github.com/aswin-panengal/Customer-Retention-Intelligence-System", // <-- Replace with your real link
+    github: "https://github.com/aswin-panengal/Customer-Retention-Intelligence-System",
     image: "/cris-screenshot.png"
   },
-
   {
     id: "smartops",
     title: "SmartOps (Dual-Engine AI Platform)",
@@ -56,6 +55,9 @@ export default function Portfolio() {
   const [activeTab, setActiveTab] = useState("about");
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<any | null>(null);
+
+  // NEW: State for the copy-to-clipboard functionality
+  const [copied, setCopied] = useState(false);
 
   // Vercel AI SDK useChat hook (replaces manual fetch logic)
   const { messages, input, handleInputChange, handleSubmit, isLoading, status, error } = useChat({
@@ -101,6 +103,16 @@ export default function Portfolio() {
 
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // NEW: Function to handle copying the email
+  const handleCopyEmail = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigator.clipboard.writeText('aswinpanengal@gmail.com');
+    setCopied(true);
+    setTimeout(() => {
+      setCopied(false);
+    }, 2000);
   };
 
   return (
@@ -214,9 +226,15 @@ export default function Portfolio() {
             </p>
 
             <div className="flex flex-wrap justify-center gap-4 mb-12">
-              <a href="https://mail.google.com/mail/?view=cm&fs=1&to=aswinpanengal@gmail.com" target="_blank" rel="noreferrer" className="flex items-center gap-2 px-6 py-3 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-red-500/20 hover:border-red-500/50 transition-colors text-white">
-                <Mail className="w-5 h-5" /> Gmail
-              </a>
+              {/* UPDATED: Copy to Clipboard Gmail Button */}
+              <button
+                onClick={handleCopyEmail}
+                className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-red-500/20 hover:border-red-500/50 transition-colors text-white w-[140px]"
+              >
+                {copied ? <Check className="w-5 h-5 text-green-400" /> : <Mail className="w-5 h-5" />}
+                {copied ? <span className="text-green-400 font-medium">Copied!</span> : <span>Gmail</span>}
+              </button>
+
               <a href="https://www.linkedin.com/in/aswinpanengal/" target="_blank" rel="noreferrer" className="flex items-center gap-2 px-6 py-3 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-[#0A66C2]/20 hover:border-[#0A66C2]/50 transition-colors text-white">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" /><rect width="4" height="12" x="2" y="9" /><circle cx="4" cy="4" r="2" /></svg>
                 LinkedIn
