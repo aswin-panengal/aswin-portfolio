@@ -51,15 +51,68 @@ const PROJECTS = [
   }
 ];
 
+// TYPEWRITER PHRASES - Seamlessly blends your keywords into meaningful statements
+const HERO_PHRASES = [
+  "specializes in AI & automation.",
+  "builds scalable RAG pipelines.",
+  "deploys scalable machine learning.",
+  "automates workflows with LLMs."
+];
+// TYPEWRITER COMPONENT - Inherits parent color automatically
+function Typewriter() {
+  const [text, setText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [loopNum, setLoopNum] = useState(0);
+  const [typingSpeed, setTypingSpeed] = useState(80);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const i = loopNum % HERO_PHRASES.length;
+      const fullText = HERO_PHRASES[i];
+
+      if (isDeleting) {
+        setText(fullText.substring(0, text.length - 1));
+        setTypingSpeed(30);
+      } else {
+        setText(fullText.substring(0, text.length + 1));
+        setTypingSpeed(60);
+      }
+
+      if (!isDeleting && text === fullText) {
+        setTimeout(() => setIsDeleting(true), 2500);
+      } else if (isDeleting && text === "") {
+        setIsDeleting(false);
+        setLoopNum(loopNum + 1);
+        setTypingSpeed(400);
+      }
+    }, typingSpeed);
+
+    return () => clearTimeout(timer);
+  }, [text, isDeleting, loopNum, typingSpeed]);
+
+  return (
+    <span>
+      {text}
+      <motion.span
+        animate={{ opacity: [0, 1, 0] }}
+        transition={{ repeat: Infinity, duration: 0.8 }}
+        className="inline-block ml-1 font-normal"
+      >
+        |
+      </motion.span>
+    </span>
+  );
+}
+
 export default function Portfolio() {
   const [activeTab, setActiveTab] = useState("about");
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<any | null>(null);
 
-  // NEW: State for the copy-to-clipboard functionality
+  // State for the copy-to-clipboard functionality
   const [copied, setCopied] = useState(false);
 
-  // Vercel AI SDK useChat hook (replaces manual fetch logic)
+  // Vercel AI SDK useChat hook
   const { messages, input, handleInputChange, handleSubmit, isLoading, status, error } = useChat({
     api: '/api/chat',
     streamProtocol: 'data',
@@ -105,7 +158,7 @@ export default function Portfolio() {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // NEW: Function to handle copying the email
+  // Function to handle copying the email
   const handleCopyEmail = (e: React.MouseEvent) => {
     e.preventDefault();
     navigator.clipboard.writeText('aswinpanengal@gmail.com');
@@ -161,13 +214,13 @@ export default function Portfolio() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-
               <h1 className="text-6xl md:text-8xl font-bold tracking-tight text-white mb-6">
                 Hi, I'm <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-500">Aswin.</span>
               </h1>
 
-              <p className="text-xl md:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-zinc-200 to-zinc-500 leading-relaxed font-light mb-10 max-w-xl">
-                I am a MCA graduate specializing in AI and automation, building smart, real-world solutions.
+              {/* UPDATED TAGLINE WITH TYPEWRITER (Uses existing gradient and prevents layout shift) */}
+              <p className="text-xl md:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-zinc-200 to-zinc-500 leading-relaxed font-light mb-10 max-w-xl min-h-[5rem] sm:min-h-[4rem]">
+                An MCA graduate and Applied AI Engineer who <Typewriter />
               </p>
 
               <div className="flex gap-4">
@@ -226,7 +279,6 @@ export default function Portfolio() {
             </p>
 
             <div className="flex flex-wrap justify-center gap-4 mb-12">
-              {/* UPDATED: Copy to Clipboard Gmail Button */}
               <button
                 onClick={handleCopyEmail}
                 className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-red-500/20 hover:border-red-500/50 transition-colors text-white w-[140px]"
