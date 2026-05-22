@@ -167,7 +167,7 @@ export default function Portfolio() {
               </h1>
 
               <p className="text-xl md:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-zinc-200 to-zinc-500 leading-relaxed font-light mb-10 max-w-xl">
-                I am a final year MCA student specializing in AI and automation, building smart, real-world solutions.
+                I am a MCA graduate specializing in AI and automation, building smart, real-world solutions.
               </p>
 
               <div className="flex gap-4">
