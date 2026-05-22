@@ -58,6 +58,7 @@ const HERO_PHRASES = [
   "deploys scalable machine learning.",
   "automates workflows with LLMs."
 ];
+
 // TYPEWRITER COMPONENT - Inherits parent color automatically
 function Typewriter() {
   const [text, setText] = useState("");
@@ -218,7 +219,6 @@ export default function Portfolio() {
                 Hi, I'm <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-500">Aswin.</span>
               </h1>
 
-              {/* UPDATED TAGLINE WITH TYPEWRITER (Uses existing gradient and prevents layout shift) */}
               <p className="text-xl md:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-zinc-200 to-zinc-500 leading-relaxed font-light mb-10 max-w-xl min-h-[5rem] sm:min-h-[4rem]">
                 An MCA graduate and Applied AI Engineer who <Typewriter />
               </p>
@@ -413,10 +413,10 @@ export default function Portfolio() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             onClick={() => setIsChatOpen(true)}
-            className="fixed bottom-8 right-8 z-[100] p-4 bg-purple-600 hover:bg-purple-500 text-white rounded-full shadow-2xl shadow-purple-900/50 flex items-center gap-3 group transition-colors"
+            className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-[100] p-4 bg-purple-600 hover:bg-purple-500 text-white rounded-full shadow-2xl shadow-purple-900/50 flex items-center md:gap-3 group transition-colors"
           >
             <MessageCircle className="w-6 h-6" />
-            <span className="font-medium pr-2 flex items-center gap-1">
+            <span className="hidden md:flex font-medium pr-2 items-center gap-1">
               <span className="whitespace-nowrap">Ask</span>
               <span className="overflow-hidden max-w-0 group-hover:max-w-[9rem] transition-all duration-300 ease-in-out whitespace-nowrap">
                 about me
