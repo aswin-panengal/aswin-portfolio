@@ -40,13 +40,14 @@ const PROJECTS = [
   },
   {
     id: "smartops",
-    title: "SmartOps (Dual-Engine AI Platform)",
-    shortDesc: "Production-grade RAG and analytical engine powered by LangGraph, FastAPI, and Qdrant.",
-    longDesc: "A unified conversational interface that intelligently routes queries between a PDF semantic search engine and a CSV pandas-generation engine. It features stateful conversation memory with automatic summarization to prevent token limits. The entire FastAPI, Qdrant, and n8n automation stack is containerized with Docker and auto-deployed via Render.",
-    stack: ["FastAPI", "LangGraph", "Qdrant", "Gemini API", "Docker", "n8n"],
+    title: "SmartOps",
+    shortDesc: "A multi-workspace AI platform using LangGraph state routing for deterministic CSV analysis and semantic PDF retrieval.",
+    longDesc: "A unified, session-isolated workspace that intelligently orchestrates queries between a Pandas-driven calculation sandbox and an unstructured PDF semantic search pipeline. Features stateful multi-session memory to prevent data leakage, automatic token-safe summarization, and a containerized FastAPI backend deployed via Docker and Render, alongside a Next.js 14 frontend.",
+    stack: ["FastAPI", "Next.js 14", "TypeScript", "LangGraph", "Qdrant", "Pandas", "Gemini API", "Docker"],
     icon: Brain,
     color: "text-emerald-400",
     github: "https://github.com/aswin-panengal/SmartOps",
+    livelink: "https://smart-ops-eight.vercel.app/",
     image: "/SmartOps logo.png"
   }
 ];
@@ -354,7 +355,6 @@ export default function Portfolio() {
                       Watch Demo
                     </a>
                   )}
-
                   {/* GitHub Button */}
                   {selectedProject.github && (
                     <a
@@ -365,6 +365,19 @@ export default function Portfolio() {
                     >
                       <GitBranch className="w-4 h-4 group-hover:scale-110 transition-transform" />
                       View Code
+                    </a>
+                  )}
+
+                  {/* Live Site Button */}
+                  {selectedProject.livelink && (
+                    <a
+                      href={selectedProject.livelink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full text-sm font-medium transition-colors w-fit group"
+                    >
+                      <ExternalLink className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                      Live Link
                     </a>
                   )}
                 </div>
@@ -395,7 +408,7 @@ export default function Portfolio() {
                   />
                 ) : (
                   <div className="aspect-video flex items-center justify-center text-zinc-600">
-                    <p>Screenshot coming soon!</p>
+                    <p>!</p>
                   </div>
                 )}
               </div>
