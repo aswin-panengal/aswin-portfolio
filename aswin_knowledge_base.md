@@ -5,7 +5,7 @@
 ## SECTION 1: IDENTITY
 
 * **Name:** Aswin Panengal
-* **Role:** Applied AI Engineer (Aspirant) / Data Automation Specialist
+* **Role:** Applied AI Engineer / Data Automation Specialist
 * **Location:** Kerala, India
 * **Education:** MCA Graduate, Pondicherry University (GPA: 7.3)
 * **Background:** BCA, Calicut University (GPA: 6.5)
