@@ -3,73 +3,75 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createGroq } from "@ai-sdk/groq";
 import { QdrantClient } from "@qdrant/js-client-rest";
 
-const google = createGoogleGenerativeAI({
-    apiKey: process.env.GEMINI_API_KEY || '',
-});
+if (!process.env.GEMINI_API_KEY) throw new Error("Missing GEMINI_API_KEY");
+if (!process.env.GROQ_API_KEY)   throw new Error("Missing GROQ_API_KEY");
+if (!process.env.QDRANT_API_KEY) throw new Error("Missing QDRANT_API_KEY");
+if (!process.env.QDRANT_URL)     throw new Error("Missing QDRANT_URL");
 
-const groq = createGroq({
-    apiKey: process.env.GROQ_API_KEY || '',
-});
+const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY });
+const groq   = createGroq({ apiKey: process.env.GROQ_API_KEY });
+const qdrant = new QdrantClient({ url: process.env.QDRANT_URL, apiKey: process.env.QDRANT_API_KEY });
 
-const qdrant = new QdrantClient({
-    url: process.env.QDRANT_URL || '',
-    apiKey: process.env.QDRANT_API_KEY || '',
-});
+interface RawMessage {
+  role: string;
+  content: string | { text?: string } | unknown;
+}
 
 export async function POST(req: Request) {
+  try {
+    const body = await req.json() as { messages?: unknown };
+    const { messages } = body;
+
+    if (!Array.isArray(messages) || messages.length === 0 || messages.length > 50) {
+      return new Response("Invalid request", { status: 400 });
+    }
+
+    type AllowedRole = "user" | "assistant" | "system";
+    const ALLOWED_ROLES = new Set<string>(["user", "assistant", "system"]);
+
+    const normalizedMessages = (messages as RawMessage[])
+      .filter((m) => ALLOWED_ROLES.has(m.role))
+      .map((message) => ({
+        role: message.role as AllowedRole,
+        content:
+        typeof message.content === "string"
+          ? message.content.slice(0, 2000)
+          : typeof message.content === "object" && message.content !== null && "text" in (message.content as object)
+          ? String((message.content as { text: unknown }).text ?? "")
+          : JSON.stringify(message.content ?? ""),
+    }));
+
+    const lastMessage = normalizedMessages[normalizedMessages.length - 1].content;
+    const conversationContext = normalizedMessages.slice(-2).map((m) => `${m.role}: ${m.content}`).join("\n");
+
+    let context = "";
+
     try {
-        const { messages } = await req.json();
+      const embeddingQuery = conversationContext || lastMessage;
 
-        const normalizedMessages = Array.isArray(messages)
-            ? messages.map((message: any) => ({
-                role: message.role,
-                content:
-                    typeof message.content === 'string'
-                        ? message.content
-                        : message.content?.text || JSON.stringify(message.content || ''),
-            }))
-            : [];
+      const { embedding } = await embed({
+        model: google.textEmbeddingModel("gemini-embedding-001"),
+        value: embeddingQuery,
+      });
 
-        const lastMessage = normalizedMessages.length > 0 ? normalizedMessages[normalizedMessages.length - 1].content : '';
+      const searchResult = await qdrant.search("aswin_portfolio_v4", {
+        vector: embedding,
+        limit: 3,
+        with_payload: true,
+      });
 
-        // Include recent conversation context for better follow-up questions
-        const recentMessages = normalizedMessages.slice(-2); // Reduced to 2 messages for speed
-        const conversationContext = recentMessages.map(m => `${m.role}: ${m.content}`).join('\n');
+      context = searchResult
+        .map((r) => (typeof r.payload?.text === "string" ? r.payload.text : ""))
+        .filter(Boolean)
+        .join("\n\n---\n\n");
+    } catch (retrievalError: unknown) {
+      console.error("RAG retrieval failed:", retrievalError instanceof Error ? retrievalError.message : retrievalError);
+      context = "[Note: knowledge base unavailable — answer from general knowledge only]";
+    }
 
-        let context = '';
+    const systemPrompt = `You are Aswin Panengal's professional, friendly, and confident AI Assistant.
 
-        try {
-            if (lastMessage && process.env.GEMINI_API_KEY && process.env.QDRANT_URL && process.env.QDRANT_API_KEY) {
-                // Use conversation context for embedding to handle follow-up questions
-                const embeddingQuery = conversationContext || lastMessage;
-
-                const { embedding } = await embed({
-                    model: google.textEmbeddingModel('gemini-embedding-001'),
-                    value: embeddingQuery,
-                });
-
-                const searchResult = await qdrant.search('aswin_portfolio_v4', {
-                    vector: embedding,
-                    limit: 3, // Reduced for speed
-                    with_payload: true,
-                });
-
-                context = searchResult
-                    .map((r) => (typeof r.payload?.text === 'string' ? r.payload.text : ''))
-                    .filter(Boolean)
-                    .join('\n\n---\n\n');
-
-                // Debugger to verify Qdrant is actually returning your skills
-                console.log("\n--- QDRANT CONTEXT ---\n", context, "\n----------------------\n");
-            }
-        } catch (retrievalError: any) {
-            console.error('RAG retrieval failed, continuing without context:', retrievalError);
-            context = '';
-        }
-
-        const systemPrompt = `You are Aswin Panengal's professional, friendly, and confident AI Assistant.
-
-Aswin is a final-year MCA student focused on AI Engineering and Data Automation. 
+Aswin is a final-year MCA student focused on AI Engineering and Data Automation.
 He has no corporate experience yet but has built strong real-world AI projects.
 
 Context about Aswin:
@@ -97,7 +99,7 @@ RESPONSE RULES:
 - If message is ONLY a greeting → reply in 1–2 short sentences
 - If greeting + question → ignore greeting rule and answer directly
 
-3. “TELL ME ABOUT ASWIN”:
+3. "TELL ME ABOUT ASWIN":
 Provide a concise overview:
 - Final-year MCA student
 - Focus on AI Engineering & Automation
@@ -108,7 +110,7 @@ If not in context:
 "I don't have that specific information in my current knowledge base, but you can reach out to Aswin directly at [Email Aswin](mailto:aswinpanengal@gmail.com)."
 
 5. ZERO-GUESSING POLICY:
-- If the user asks for a list of skills or technologies, ONLY list the exact words found in the context. 
+- If the user asks for a list of skills or technologies, ONLY list the exact words found in the context.
 - Do NOT guess generic industry skills. If exact skills aren't in the context, say "Please check my resume for the full technical stack."
 
 ---
@@ -137,28 +139,27 @@ FORMATTING (STRICT):
 6. CONCISENESS & LENGTH (CRITICAL):
 - Keep responses short, punchy, and highly scannable.
 - MAX LENGTH: 3 short paragraphs OR a 1-sentence intro followed by 3-4 bullet points.
-- NEVER output a "wall of text" or over-explain. 
+- NEVER output a "wall of text" or over-explain.
 - If a topic is complex, provide a high-level summary and stop.
 
 ---
 `;
 
-        const result = await streamText({
-            model: groq('llama-3.1-8b-instant'),
-            temperature: 0.1, // Added to enforce strict factual adherence
-            system: systemPrompt,
-            messages: normalizedMessages,
-            maxTokens: 1000, // Limit response length for speed
-        });
+    const result = streamText({
+      model: groq("llama-3.1-8b-instant"),
+      temperature: 0.1,
+      system: systemPrompt,
+      messages: normalizedMessages,
+      maxTokens: 1000,
+    });
 
-        return result.toDataStreamResponse({
-            sendUsage: false,
-            getErrorMessage: (error) => (error instanceof Error ? error.message : String(error)),
-        });
+    return result.toDataStreamResponse({
+      sendUsage: false,
+      getErrorMessage: () => "An error occurred. Please try again.",
+    });
 
-    } catch (error: any) {
-        // Detailed error logging for future debugging
-        console.error("CRITICAL BACKEND ERROR:", error);
-        return new Response(error.message || "Unknown backend error occurred", { status: 500 });
-    }
+  } catch (error: unknown) {
+    console.error("Chat route error:", error instanceof Error ? error.message : error);
+    return new Response("An error occurred. Please try again.", { status: 500 });
+  }
 }
