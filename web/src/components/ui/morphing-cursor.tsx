@@ -106,18 +106,25 @@ export function MagneticText({ text, hoverText = text, className }: MagneticText
     stopLoop(); // target → (0,0), loop exits when settled
   }, [stopLoop]);
 
-  // Touch: no magnetic effect on mobile — just activate/deactivate circle size via CSS
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     const touch = e.touches[0];
     const pos = getPosFromClient(touch.clientX, touch.clientY);
     if (pos) {
       targetPos.current = pos;
-      currentPos.current = pos;
+      currentPos.current = pos; // snap to finger, no initial lerp jump
     }
     isActiveRef.current = true;
     setIsActive(true);
     startLoop();
   }, [startLoop]);
+
+  // Updates targetPos as the finger drags — rAF loop lerps toward it every frame.
+  // Pure ref write: zero re-renders, zero DOM mutations per event.
+  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    const touch = e.touches[0];
+    const pos = getPosFromClient(touch.clientX, touch.clientY);
+    if (pos) targetPos.current = pos;
+  }, []);
 
   const handleTouchEnd = useCallback(() => {
     isActiveRef.current = false;
@@ -137,6 +144,7 @@ export function MagneticText({ text, hoverText = text, className }: MagneticText
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       className={cn(
         "relative inline-flex items-center justify-start cursor-none select-none touch-none",
