@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import Image from "next/image";
 import {
   FileText,
   TrendingUp,
@@ -75,21 +76,64 @@ const PROJECTS: Project[] = [
 
 export function ProjectsSection() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [imgError, setImgError] = useState(false);
   const prefersReducedMotion = useReducedMotion();
 
-  const containerVariants = {
+  // Focus management refs
+  const modalRef       = useRef<HTMLDivElement>(null);
+  const triggerRef     = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setSelectedProject(null); };
+    if (selectedProject) window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selectedProject]);
+
+  // Reset image error state when a different project is selected
+  useEffect(() => { setImgError(false); }, [selectedProject]);
+
+  // Focus trap + focus return
+  useEffect(() => {
+    if (!selectedProject) {
+      // Return focus to the card that opened the modal
+      triggerRef.current?.focus();
+      triggerRef.current = null;
+      return;
+    }
+    if (!modalRef.current) return;
+    const modal = modalRef.current;
+    const FOCUSABLE = 'button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])';
+    const nodes = Array.from(modal.querySelectorAll<HTMLElement>(FOCUSABLE));
+    // Focus first element (close button) after animation frame
+    requestAnimationFrame(() => nodes[0]?.focus());
+
+    const onTab = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const first = nodes[0];
+      const last  = nodes[nodes.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+    document.addEventListener("keydown", onTab);
+    return () => document.removeEventListener("keydown", onTab);
+  }, [selectedProject]);
+
+  const containerVariants = useMemo(() => ({
     hidden: {},
     visible: { transition: { staggerChildren: prefersReducedMotion ? 0 : 0.12 } },
-  };
+  }), [prefersReducedMotion]);
 
-  const cardVariants = {
+  const cardVariants = useMemo(() => ({
     hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 30 },
     visible: {
       opacity: 1,
       y: 0,
       transition: { duration: prefersReducedMotion ? 0 : 0.6 },
     },
-  };
+  }), [prefersReducedMotion]);
 
   return (
     <>
@@ -125,11 +169,24 @@ export function ProjectsSection() {
                 variants={cardVariants}
                 whileHover={{ y: prefersReducedMotion ? 0 : -6 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                onClick={() => setSelectedProject(project)}
+                onClick={(e) => {
+                  triggerRef.current = e.currentTarget as HTMLElement;
+                  setSelectedProject(project);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    triggerRef.current = e.currentTarget as HTMLElement;
+                    setSelectedProject(project);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`View details for ${project.title}`}
                 className="relative group cursor-pointer"
               >
                 {/* Gradient glow on hover */}
-                <div className="absolute -inset-[1px] rounded-3xl bg-gradient-to-r from-white/8 to-white/4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm -z-10" />
+                <div className="absolute -inset-[1px] rounded-3xl bg-gradient-to-r from-white/8 to-white/4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm -z-10" aria-hidden="true" />
 
                 <div className="p-8 rounded-3xl border border-zinc-800/50 group-hover:border-white/20 bg-zinc-900/40 backdrop-blur-md hover:bg-zinc-900/80 transition-all flex flex-col h-full">
                   {/* Category chip */}
@@ -141,6 +198,7 @@ export function ProjectsSection() {
                     whileHover={prefersReducedMotion ? {} : { rotate: 10, scale: 1.15 }}
                     transition={{ duration: 0.2 }}
                     className="w-fit mb-6"
+                    aria-hidden="true"
                   >
                     <project.icon className={`w-8 h-8 ${project.color}`} />
                   </motion.div>
@@ -166,7 +224,7 @@ export function ProjectsSection() {
                     </div>
 
                     {/* View details arrow */}
-                    <span className="text-xs text-zinc-600 group-hover:text-white transition-colors flex items-center gap-1 shrink-0 ml-3">
+                    <span className="text-xs text-zinc-600 group-hover:text-white transition-colors flex items-center gap-1 shrink-0 ml-3" aria-hidden="true">
                       <span className="overflow-hidden max-w-0 group-hover:max-w-[5rem] transition-all duration-300 whitespace-nowrap">
                         View details
                       </span>
@@ -190,22 +248,29 @@ export function ProjectsSection() {
               exit={{ opacity: 0 }}
               onClick={() => setSelectedProject(null)}
               className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              aria-hidden="true"
             />
             <motion.div
+              ref={modalRef}
               initial={{ opacity: 0, scale: prefersReducedMotion ? 1 : 0.95, y: prefersReducedMotion ? 0 : 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: prefersReducedMotion ? 1 : 0.95, y: prefersReducedMotion ? 0 : 20 }}
               transition={{ duration: prefersReducedMotion ? 0 : 0.25, ease: "easeOut" }}
+              role="dialog"
+              aria-modal="true"
+              aria-label={selectedProject.title}
+              tabIndex={-1}
               className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-zinc-950 border border-zinc-800 rounded-3xl p-6 md:p-10 shadow-2xl"
             >
               <button
                 onClick={() => setSelectedProject(null)}
+                aria-label={`Close ${selectedProject.title} details`}
                 className="absolute top-6 right-6 p-2 bg-zinc-900 hover:bg-zinc-800 rounded-full text-zinc-400 hover:text-white transition-colors"
               >
-                <X className="w-6 h-6" />
+                <X className="w-6 h-6" aria-hidden="true" />
               </button>
 
-              <selectedProject.icon className={`w-12 h-12 ${selectedProject.color} mb-6`} />
+              <selectedProject.icon className={`w-12 h-12 ${selectedProject.color} mb-6`} aria-hidden="true" />
 
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <h2 className="text-4xl font-bold text-white">{selectedProject.title}</h2>
@@ -217,7 +282,7 @@ export function ProjectsSection() {
                       rel="noreferrer"
                       className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-full text-sm font-medium transition-colors w-fit group"
                     >
-                      <Play className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                      <Play className="w-4 h-4 group-hover:scale-110 transition-transform" aria-hidden="true" />
                       Watch Demo
                     </a>
                   )}
@@ -228,7 +293,7 @@ export function ProjectsSection() {
                       rel="noreferrer"
                       className="flex items-center gap-2 px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full text-sm font-medium transition-colors w-fit group"
                     >
-                      <GitBranch className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                      <GitBranch className="w-4 h-4 group-hover:scale-110 transition-transform" aria-hidden="true" />
                       View Code
                     </a>
                   )}
@@ -239,7 +304,7 @@ export function ProjectsSection() {
                       rel="noreferrer"
                       className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full text-sm font-medium transition-colors w-fit group"
                     >
-                      <ExternalLink className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                      <ExternalLink className="w-4 h-4 group-hover:scale-110 transition-transform" aria-hidden="true" />
                       Live Link
                     </a>
                   )}
@@ -259,21 +324,20 @@ export function ProjectsSection() {
 
               <p className="text-lg text-zinc-300 leading-relaxed mb-10">{selectedProject.longDesc}</p>
 
-              <div className="w-full overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 shadow-inner">
-                {selectedProject.image ? (
-                  <img
+              {/* next/image with fixed aspect-ratio container — eliminates CLS */}
+              <div className="relative w-full aspect-video overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 shadow-inner">
+                {selectedProject.image && !imgError ? (
+                  <Image
                     src={selectedProject.image}
-                    alt={`${selectedProject.title} screenshot`}
-                    className="w-full h-auto object-cover"
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                      e.currentTarget.parentElement!.innerHTML =
-                        '<div class="aspect-video flex items-center justify-center text-zinc-600"><p>Screenshot coming soon!</p></div>';
-                    }}
+                    alt={`${selectedProject.title} — project screenshot`}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 800px"
+                    onError={() => setImgError(true)}
                   />
                 ) : (
-                  <div className="aspect-video flex items-center justify-center text-zinc-600">
-                    <p>!</p>
+                  <div className="absolute inset-0 flex items-center justify-center text-zinc-600 text-sm">
+                    Screenshot coming soon!
                   </div>
                 )}
               </div>

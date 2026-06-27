@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Mail, GitBranch, ExternalLink, MessageCircle, Check } from "lucide-react";
 
@@ -19,19 +19,19 @@ export function ContactSection({ onOpenChat }: ContactSectionProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const containerVariants = {
+  const containerVariants = useMemo(() => ({
     hidden: {},
     visible: { transition: { staggerChildren: prefersReducedMotion ? 0 : 0.08 } },
-  };
+  }), [prefersReducedMotion]);
 
-  const itemVariants = {
+  const itemVariants = useMemo(() => ({
     hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 20 },
     visible: {
       opacity: 1,
       y: 0,
       transition: { duration: prefersReducedMotion ? 0 : 0.5 },
     },
-  };
+  }), [prefersReducedMotion]);
 
   return (
     <section
@@ -56,6 +56,7 @@ export function ContactSection({ onOpenChat }: ContactSectionProps) {
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
               backgroundImage: "linear-gradient(90deg, #71717a, #ffffff, #d4d4d8, #ffffff, #71717a)",
+              willChange: "background-position",
             }}
             className="text-4xl md:text-5xl font-bold"
           >

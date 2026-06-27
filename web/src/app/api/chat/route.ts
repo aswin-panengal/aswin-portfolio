@@ -12,6 +12,23 @@ const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY });
 const groq   = createGroq({ apiKey: process.env.GROQ_API_KEY });
 const qdrant = new QdrantClient({ url: process.env.QDRANT_URL, apiKey: process.env.QDRANT_API_KEY });
 
+// ── In-memory rate limiter (per Vercel instance; Upstash Redis for cross-instance) ──
+const rateMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT    = 20;
+const RATE_WINDOW   = 60_000;
+
+function checkRateLimit(ip: string): boolean {
+  const now   = Date.now();
+  const entry = rateMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW });
+    return true;
+  }
+  if (entry.count >= RATE_LIMIT) return false;
+  entry.count++;
+  return true;
+}
+
 interface RawMessage {
   role: string;
   content: string | { text?: string } | unknown;
@@ -19,6 +36,18 @@ interface RawMessage {
 
 export async function POST(req: Request) {
   try {
+    // ── Content-Type guard ──────────────────────────────────────────────────
+    const contentType = req.headers.get("content-type") ?? "";
+    if (!contentType.includes("application/json")) {
+      return new Response("Unsupported Media Type", { status: 415 });
+    }
+
+    // ── Rate limiting ───────────────────────────────────────────────────────
+    const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
+    if (!checkRateLimit(clientIp)) {
+      return new Response("Too many requests. Please try again later.", { status: 429 });
+    }
+
     const body = await req.json() as { messages?: unknown };
     const { messages } = body;
 
@@ -34,14 +63,19 @@ export async function POST(req: Request) {
       .map((message) => ({
         role: message.role as AllowedRole,
         content:
-        typeof message.content === "string"
-          ? message.content.slice(0, 2000)
-          : typeof message.content === "object" && message.content !== null && "text" in (message.content as object)
-          ? String((message.content as { text: unknown }).text ?? "")
-          : JSON.stringify(message.content ?? ""),
-    }));
+          typeof message.content === "string"
+            ? message.content.slice(0, 2000)
+            : typeof message.content === "object" && message.content !== null && "text" in (message.content as object)
+            ? String((message.content as { text: unknown }).text ?? "")
+            : JSON.stringify(message.content ?? ""),
+      }));
 
-    const lastMessage = normalizedMessages[normalizedMessages.length - 1].content;
+    // ── Guard: all messages had invalid roles ───────────────────────────────
+    if (normalizedMessages.length === 0) {
+      return new Response("Invalid request", { status: 400 });
+    }
+
+    const lastMessage         = normalizedMessages[normalizedMessages.length - 1].content;
     const conversationContext = normalizedMessages.slice(-2).map((m) => `${m.role}: ${m.content}`).join("\n");
 
     let context = "";

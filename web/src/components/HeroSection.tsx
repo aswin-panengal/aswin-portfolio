@@ -2,10 +2,10 @@
 
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
+import Image from "next/image";
 import { MagneticText } from "@/components/ui/morphing-cursor";
 
 const PHOTO_DURATION = 1.2;
-const TEXT_DELAY_BASE = 0.5;
 
 interface HeroSectionProps {
   onScrollToProjects?: () => void;
@@ -18,34 +18,61 @@ export function HeroSection({ onScrollToProjects, onScrollToContact }: HeroSecti
   const imageY = useTransform(scrollY, [0, 800], [0, prefersReducedMotion ? 0 : -30]);
 
   const d = prefersReducedMotion ? 0 : 1;
-  const ease = [0.16, 1, 0.3, 1] as const; // expo-out: fast start, long smooth tail
+  const ease = [0.16, 1, 0.3, 1] as const;
 
   return (
     <section id="about" className="relative min-h-screen flex flex-col lg:flex-row">
 
       {/* ── Photo side ───────────────────────────────────────────────────── */}
       <div className="relative w-full lg:w-1/2 h-[50vh] lg:h-screen overflow-hidden">
-        {/* Fade + scale up: photo starts at 95% scale and opacity 0 */}
+        {/* Outer: jump-in y+opacity. Inner: parallax+scale. Kept separate to avoid MotionValue conflict. */}
         <motion.div
-          style={{ y: imageY }}
-          initial={{ opacity: 0, scale: 1.04 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.3 }}
           transition={{ duration: PHOTO_DURATION * d, ease, delay: 0.1 * d }}
           className="w-full h-[110%]"
         >
-          <img src="/bg.jpg" alt="Aswin" className="w-full h-full object-cover" />
+          <motion.div
+            style={{ y: imageY }}
+            initial={{ scale: prefersReducedMotion ? 1 : 1.04 }}
+            whileInView={{ scale: 1 }}
+            viewport={{ once: false, amount: 0.3 }}
+            transition={{ duration: PHOTO_DURATION * d, ease }}
+            className="relative w-full h-full"
+          >
+            <Image
+              src="/bg.jpg"
+              alt="Aswin"
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover"
+              placeholder="blur"
+              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAAIAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAABwYIBf/EACIQAAAGAgMBAQAAAAAAAAAAAAECAwQFBhESITFBUf/EABQBAQAAAAAAAAAAAAAAAAAAAAD/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCz7pWp3Gu3q2VXs96teoXHi7sW4bC4R9jlX5GWYV8F3oHDnJj6Z7pnHFkknDz3g5VlxnGceVVHOckBrwAB/9k="
+            />
+          </motion.div>
         </motion.div>
         <div className="absolute inset-0 bg-gradient-to-b lg:bg-gradient-to-r from-transparent via-black/40 to-black" />
       </div>
 
-      {/* ── Text side ────────────────────────────────────────────────────── */}
-      <div className="relative z-10 w-full lg:w-1/2 flex flex-col justify-center px-8 lg:px-16 py-20 bg-black">
-
-        {/* Line 1 — "Hi, I'm Aswin." */}
+      {/* ── Text side — perspective: 900px establishes the 3D field ─────── */}
+      <div
+        className="relative z-10 w-full lg:w-1/2 flex flex-col justify-center px-8 lg:px-16 py-20 bg-black"
+        style={{ perspective: "900px" }}
+      >
+        {/* "Hi, I'm Aswin." — 3D depth entry: rises from below + rotates into view */}
         <motion.h1
-          initial={{ opacity: 0, y: 32 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.0 * d, delay: TEXT_DELAY_BASE * d, ease }}
+          initial={{
+            opacity: 0,
+            y: prefersReducedMotion ? 0 : 60,
+            rotateX: prefersReducedMotion ? 0 : 22,
+            filter: prefersReducedMotion ? "blur(0px)" : "blur(6px)",
+            scale: prefersReducedMotion ? 1 : 0.92,
+          }}
+          whileInView={{ opacity: 1, y: 0, rotateX: 0, filter: "blur(0px)", scale: 1 }}
+          viewport={{ once: false, amount: 0.3 }}
+          transition={{ duration: 1.0 * d, delay: 0.3 * d, ease }}
           className="text-6xl md:text-8xl font-bold tracking-tight text-white mb-6"
         >
           Hi, I&apos;m{" "}
@@ -54,21 +81,49 @@ export function HeroSection({ onScrollToProjects, onScrollToContact }: HeroSecti
           </span>
         </motion.h1>
 
-        {/* Line 2 — eyebrow label */}
-        <motion.p
-          initial={{ opacity: 0, y: 28 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9 * d, delay: (TEXT_DELAY_BASE + 0.22) * d, ease }}
-          className="text-zinc-500 text-sm uppercase tracking-widest mb-3 font-medium"
-        >
-          An MCA graduate &amp; —
-        </motion.p>
-
-        {/* Line 3 — MagneticText role */}
+        {/* Eyebrow — fades in, flanking lines grow outward from centre */}
         <motion.div
-          initial={{ opacity: 0, y: 28 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9 * d, delay: (TEXT_DELAY_BASE + 0.44) * d, ease }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: false, amount: 0.3 }}
+          transition={{ duration: 0.7 * d, delay: 0.5 * d }}
+          className="flex items-center gap-3 mb-6"
+        >
+          {/* Left line — originX: right edge → grows right-to-left */}
+          <motion.span
+            initial={{ scaleX: 0 }}
+            whileInView={{ scaleX: 1 }}
+            viewport={{ once: false, amount: 0.3 }}
+            transition={{ duration: 0.7 * d, delay: 0.5 * d, ease }}
+            style={{ originX: 1 }}
+            className="block h-px w-12 bg-zinc-700 flex-shrink-0"
+          />
+          <span className="text-zinc-500 text-xs uppercase tracking-widest font-medium whitespace-nowrap">
+            An MCA graduate
+          </span>
+          {/* Right line — originX: left edge → grows left-to-right */}
+          <motion.span
+            initial={{ scaleX: 0 }}
+            whileInView={{ scaleX: 1 }}
+            viewport={{ once: false, amount: 0.3 }}
+            transition={{ duration: 0.7 * d, delay: 0.5 * d, ease }}
+            style={{ originX: 0 }}
+            className="block h-px w-12 bg-zinc-700 flex-shrink-0"
+          />
+        </motion.div>
+
+        {/* Role — second 3D depth entry, 0.14s offset, slightly more dramatic */}
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: prefersReducedMotion ? 0 : 80,
+            rotateX: prefersReducedMotion ? 0 : 28,
+            filter: prefersReducedMotion ? "blur(0px)" : "blur(8px)",
+            scale: prefersReducedMotion ? 1 : 0.9,
+          }}
+          whileInView={{ opacity: 1, y: 0, rotateX: 0, filter: "blur(0px)", scale: 1 }}
+          viewport={{ once: false, amount: 0.3 }}
+          transition={{ duration: 1.05 * d, delay: 0.64 * d, ease }}
         >
           <MagneticText
             text="AI Systems Builder"
@@ -78,12 +133,14 @@ export function HeroSection({ onScrollToProjects, onScrollToContact }: HeroSecti
         </motion.div>
       </div>
 
-      {/* Scroll indicator — appears last */}
+      {/* Scroll indicator — appears after all text has settled */}
       <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: (TEXT_DELAY_BASE + 0.7) * d, duration: 0.7 * d }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: false, amount: 0.3 }}
+        transition={{ delay: 1.2 * d, duration: 0.7 * d }}
         className="absolute bottom-6 left-1/2 -translate-x-1/2 text-zinc-600 z-20"
+        aria-hidden="true"
       >
         <motion.div
           animate={prefersReducedMotion ? {} : { y: [0, 8, 0] }}

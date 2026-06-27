@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { NavPill } from "@/components/NavPill";
 import { HeroSection } from "@/components/HeroSection";
@@ -35,29 +35,37 @@ export default function Portfolio() {
     return () => observers.forEach((o) => o.disconnect());
   }, []);
 
-  const scrollToSection = (id: string) => {
+  const scrollToSection = useCallback((id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-  };
+  }, []);
+
+  const handleScrollToProjects = useCallback(() => scrollToSection("projects"), [scrollToSection]);
+  const handleScrollToContact  = useCallback(() => scrollToSection("contact"),  [scrollToSection]);
+  const handleCloseChat = useCallback(() => setIsChatOpen(false), []);
+  const handleOpenChat  = useCallback(() => setIsChatOpen(true),  []);
 
   return (
     <div className="bg-black text-zinc-300 font-sans selection:bg-purple-500/30 overflow-x-hidden bg-dot-grid">
 
-      {/* Ambient gradient blobs */}
+      {/* Ambient gradient blobs — desktop only, GPU cost not worth it on mobile */}
       {!prefersReducedMotion && (
-        <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="hidden md:block fixed inset-0 pointer-events-none overflow-hidden z-0">
           <motion.div
             animate={{ x: [0, 40, -20, 30, 0], y: [0, -30, 40, -10, 0] }}
             transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+            style={{ willChange: "transform" }}
             className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/[0.025] rounded-full blur-3xl"
           />
           <motion.div
             animate={{ x: [0, -50, 20, -30, 0], y: [0, 40, -20, 30, 0] }}
             transition={{ duration: 16, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+            style={{ willChange: "transform" }}
             className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-white/[0.02] rounded-full blur-3xl"
           />
           <motion.div
             animate={{ x: [0, 30, -40, 10, 0], y: [0, 20, -30, 40, 0] }}
             transition={{ duration: 20, repeat: Infinity, ease: "easeInOut", delay: 4 }}
+            style={{ willChange: "transform" }}
             className="absolute top-2/3 left-1/2 w-64 h-64 bg-white/[0.015] rounded-full blur-3xl"
           />
         </div>
@@ -67,18 +75,18 @@ export default function Portfolio() {
 
       <main className="relative z-10">
         <HeroSection
-          onScrollToProjects={() => scrollToSection("projects")}
-          onScrollToContact={() => scrollToSection("contact")}
+          onScrollToProjects={handleScrollToProjects}
+          onScrollToContact={handleScrollToContact}
         />
         <SkillsSection />
         <ProjectsSection />
         <ExperienceSection />
-        <ContactSection onOpenChat={() => setIsChatOpen(true)} />
+        <ContactSection onOpenChat={handleOpenChat} />
       </main>
 
       <Footer />
 
-      <ChatWidget isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} onOpen={() => setIsChatOpen(true)} mountDelay={1.2} />
+      <ChatWidget isOpen={isChatOpen} onClose={handleCloseChat} onOpen={handleOpenChat} mountDelay={1.2} />
     </div>
   );
 }

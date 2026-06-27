@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useMemo } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import dynamic from "next/dynamic";
 
 const OrbitingSkills = dynamic(() => import("@/components/ui/orbiting-skills"), { ssr: false });
@@ -51,22 +52,25 @@ const SKILL_GROUPS = [
 
 const EASE = [0.22, 1, 0.36, 1] as [number, number, number, number];
 
-const fade = {
-  hidden: { opacity: 0, y: 24 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.55, ease: EASE } },
-} as const;
-
-const stagger = {
-  hidden: {},
-  show:   { transition: { staggerChildren: 0.04 } },
-} as const;
-
-const chip = {
-  hidden: { opacity: 0, scale: 0.88 },
-  show:   { opacity: 1, scale: 1, transition: { duration: 0.35, ease: "easeOut" as const } },
-} as const;
-
 export function SkillsSection() {
+  const prefersReducedMotion = useReducedMotion();
+
+  // Variants defined inside component so they respect useReducedMotion
+  const fade = useMemo(() => ({
+    hidden: { opacity: 0, y: prefersReducedMotion ? 0 : 24 },
+    show:   { opacity: 1, y: 0, transition: { duration: prefersReducedMotion ? 0 : 0.55, ease: EASE } },
+  }), [prefersReducedMotion]);
+
+  const stagger = useMemo(() => ({
+    hidden: {},
+    show:   { transition: { staggerChildren: prefersReducedMotion ? 0 : 0.04 } },
+  }), [prefersReducedMotion]);
+
+  const chip = useMemo(() => ({
+    hidden: { opacity: 0, scale: prefersReducedMotion ? 1 : 0.88 },
+    show:   { opacity: 1, scale: 1, transition: { duration: prefersReducedMotion ? 0 : 0.35, ease: "easeOut" as const } },
+  }), [prefersReducedMotion]);
+
   return (
     <section id="skills" className="min-h-screen flex flex-col items-center justify-center px-6 py-24 bg-black">
 
@@ -112,7 +116,7 @@ export function SkillsSection() {
                   <motion.span
                     key={skill}
                     variants={chip}
-                    whileHover={{ scale: 1.05, y: -1 }}
+                    whileHover={prefersReducedMotion ? {} : { scale: 1.05, y: -1 }}
                     className="px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.04] text-zinc-300 text-xs font-medium cursor-default select-none hover:bg-white/[0.08] hover:border-white/20 hover:text-white transition-colors"
                   >
                     {skill}
@@ -123,15 +127,17 @@ export function SkillsSection() {
           ))}
         </div>
 
-        {/* RIGHT — orbit */}
+        {/* RIGHT — orbit (scaled on small screens to prevent viewport overflow) */}
         <motion.div
           variants={fade}
           initial="hidden"
           whileInView="show"
           viewport={{ once: true }}
-          className="order-1 lg:order-2 flex-shrink-0 flex flex-col items-center"
+          className="order-1 lg:order-2 flex-shrink-0 flex flex-col items-center overflow-hidden w-full lg:w-auto"
         >
-          <OrbitingSkills />
+          <div className="scale-75 sm:scale-90 md:scale-100 origin-center">
+            <OrbitingSkills />
+          </div>
         </motion.div>
 
       </div>

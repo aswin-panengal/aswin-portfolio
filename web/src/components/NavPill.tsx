@@ -40,6 +40,7 @@ export function NavPill({ activeTab, onTabClick }: NavPillProps) {
               transformOrigin: "left",
             }}
             className="fixed top-0 left-0 right-0 h-px bg-white/50 z-[200]"
+            aria-hidden="true"
           />
         )}
       </AnimatePresence>
@@ -52,12 +53,16 @@ export function NavPill({ activeTab, onTabClick }: NavPillProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/50 p-1.5 rounded-full flex gap-1 shadow-2xl shadow-black"
+            aria-label="Site navigation"
+            className="fixed left-1/2 -translate-x-1/2 z-50 bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/50 p-1.5 rounded-full flex gap-1 shadow-2xl shadow-black"
+            style={{ top: "max(1.5rem, env(safe-area-inset-top))" }}
           >
             {TABS.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => onTabClick(tab.id)}
+                aria-label={tab.label}
+                aria-current={activeTab === tab.id ? "page" : undefined}
                 className={`relative px-3 py-2 rounded-full text-sm font-medium transition-colors ${
                   activeTab === tab.id
                     ? "text-white"
@@ -72,8 +77,9 @@ export function NavPill({ activeTab, onTabClick }: NavPillProps) {
                   />
                 )}
                 <span className="relative z-10 flex items-center gap-1.5">
-                  <tab.icon className="w-4 h-4" />
-                  <span className="hidden xl:inline">{tab.label}</span>
+                  <tab.icon className="w-4 h-4" aria-hidden="true" />
+                  {/* sr-only on small screens so label stays in the accessibility tree */}
+                  <span className="sr-only xl:not-sr-only xl:inline">{tab.label}</span>
                 </span>
               </button>
             ))}

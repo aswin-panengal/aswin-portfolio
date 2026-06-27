@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Terminal, Send, MessageCircle, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -14,8 +14,19 @@ interface ChatWidgetProps {
   mountDelay?: number;
 }
 
+function getFriendlyError(err: Error): string {
+  const m = err.message.toLowerCase();
+  if (m.includes("429") || m.includes("rate limit"))
+    return "The AI is busy right now. Please wait a moment and try again.";
+  if (m.includes("50") || m.includes("server"))
+    return "Something went wrong on our end. Please try again.";
+  if (m.includes("fetch") || m.includes("network") || m.includes("failed"))
+    return "Connection issue. Please check your internet and try again.";
+  return "Something went wrong. Please try again.";
+}
+
 export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidgetProps) {
-  const { messages, input, handleInputChange, handleSubmit, isLoading, status, error } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, isLoading, status, error, reload, stop } = useChat({
     api: "/api/chat",
     streamProtocol: "data",
     onError: (err) => {
@@ -23,11 +34,44 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
     },
   });
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef    = useRef<HTMLDivElement>(null);
+  const lastMessageIdRef  = useRef<string | undefined>(undefined);
 
+  const markdownComponents = useMemo(() => ({
+    strong: ({ node: _n, ...props }: React.ComponentPropsWithoutRef<"span"> & { node?: unknown }) =>
+      <span className="font-bold text-white" {...props} />,
+    p: ({ node: _n, ...props }: React.ComponentPropsWithoutRef<"p"> & { node?: unknown }) =>
+      <p className="mb-2 last:mb-0" {...props} />,
+    ul: ({ node: _n, ...props }: React.ComponentPropsWithoutRef<"ul"> & { node?: unknown }) =>
+      <ul className="list-disc ml-4 mb-2 space-y-1" {...props} />,
+    li: ({ node: _n, ...props }: React.ComponentPropsWithoutRef<"li"> & { node?: unknown }) =>
+      <li className="mb-1 text-zinc-200" {...props} />,
+    // Sanitize href — only allow http/https/mailto to prevent javascript: XSS
+    a: ({ node: _n, href, children, ...props }: React.ComponentPropsWithoutRef<"a"> & { node?: unknown; href?: string }) => {
+      const isSafe = href ? /^(https?:\/\/|mailto:)/.test(href) : false;
+      if (!isSafe) return <span className="text-purple-400 underline cursor-not-allowed" {...props}>{children}</span>;
+      return (
+        <a href={href} {...props} target="_blank" rel="noopener noreferrer"
+           className="text-purple-400 hover:text-purple-300 underline underline-offset-2 transition-colors">
+          {children}
+        </a>
+      );
+    },
+  }), []);
+
+  // Smooth-scroll only on new messages; instant during token streaming to prevent layout thrashing
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const lastMsg = messages[messages.length - 1];
+    if (!lastMsg) return;
+    const isNewMessage = lastMsg.id !== lastMessageIdRef.current;
+    messagesEndRef.current?.scrollIntoView({ behavior: isNewMessage ? "smooth" : "auto" });
+    if (isNewMessage) lastMessageIdRef.current = lastMsg.id;
   }, [messages]);
+
+  const handleClose = () => {
+    if (isLoading) stop();
+    onClose();
+  };
 
   return (
     <>
@@ -40,14 +84,13 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
             exit={{ scale: 0, opacity: 0 }}
             transition={{ delay: mountDelay, duration: 0.4, ease: "easeOut" }}
             onClick={onOpen}
-            className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-[100] bg-purple-600 hover:bg-purple-500 text-white rounded-full shadow-2xl shadow-purple-900/50 transition-colors group
-              /* mobile: icon-only circle */
+            aria-label="Open AI chat assistant"
+            className="fixed right-6 md:right-8 z-[100] bg-purple-600 hover:bg-purple-500 text-white rounded-full shadow-2xl shadow-purple-900/50 transition-colors group
               p-4
-              /* desktop: pill with expandable text */
               md:flex md:items-center md:gap-3 md:pl-4 md:pr-4"
+            style={{ bottom: "max(1.5rem, calc(env(safe-area-inset-bottom) + 0.5rem))" }}
           >
-            <MessageCircle className="w-6 h-6 shrink-0" />
-            {/* Text — desktop only */}
+            <MessageCircle className="w-6 h-6 shrink-0" aria-hidden="true" />
             <span className="hidden md:flex font-medium items-center gap-1 overflow-hidden">
               <span className="whitespace-nowrap">Ask</span>
               <span className="max-w-0 group-hover:max-w-[6rem] overflow-hidden transition-all duration-300 ease-in-out whitespace-nowrap">
@@ -67,28 +110,37 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
             className="fixed bottom-8 right-8 z-[120] w-[400px] h-[600px] max-w-[calc(100vw-2rem)] flex flex-col rounded-3xl border border-zinc-800/80 bg-zinc-950/80 backdrop-blur-2xl shadow-2xl overflow-hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Aswin's AI Assistant"
           >
             {/* Header */}
             <div className="p-4 border-b border-zinc-800/50 bg-zinc-900/30 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-white/8 rounded-xl">
-                  <Terminal className="w-5 h-5 text-zinc-400" />
+                  <Terminal className="w-5 h-5 text-zinc-400" aria-hidden="true" />
                 </div>
                 <h2 className="text-sm font-semibold text-white">Aswin&apos;s AI Assistant</h2>
               </div>
               <button
-                onClick={onClose}
+                onClick={handleClose}
+                aria-label="Close chat"
                 className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-full transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5" aria-hidden="true" />
               </button>
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth">
+            <div
+              className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth"
+              aria-live="polite"
+              aria-atomic="false"
+              aria-label="Chat messages"
+            >
               {messages.length === 0 && (
                 <div className="h-full flex flex-col items-center justify-center text-center text-zinc-500 p-6">
-                  <MessageCircle className="w-8 h-8 mb-4 opacity-20" />
+                  <MessageCircle className="w-8 h-8 mb-4 opacity-20" aria-hidden="true" />
                   <p className="text-sm">
                     Hello! I&apos;m here to help you explore Aswin&apos;s profile. Ask me about his projects,
                     skills, education, or certifications.
@@ -108,22 +160,7 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
                     {m.role === "user" ? (
                       m.content
                     ) : (
-                      <ReactMarkdown
-                        components={{
-                          strong: ({ node, ...props }) => <span className="font-bold text-white" {...props} />,
-                          p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
-                          ul: ({ node, ...props }) => <ul className="list-disc ml-4 mb-2 space-y-1" {...props} />,
-                          li: ({ node, ...props }) => <li className="mb-1 text-zinc-200" {...props} />,
-                          a: ({ node, ...props }) => (
-                            <a
-                              {...props}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-purple-400 hover:text-purple-300 underline underline-offset-2 transition-colors"
-                            />
-                          ),
-                        }}
-                      >
+                      <ReactMarkdown components={markdownComponents}>
                         {m.content}
                       </ReactMarkdown>
                     )}
@@ -132,17 +169,23 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
               ))}
 
               {status === "error" && error && (
-                <div className="rounded-2xl border border-red-500/50 bg-red-500/10 p-3 text-sm text-red-200">
-                  {error.message || "Something went wrong with the chat."}
+                <div className="rounded-2xl border border-red-500/50 bg-red-500/10 p-3 text-sm text-red-200 flex items-center justify-between gap-3">
+                  <span>{getFriendlyError(error)}</span>
+                  <button
+                    onClick={() => reload()}
+                    className="text-xs text-red-300 hover:text-white underline shrink-0"
+                  >
+                    Retry
+                  </button>
                 </div>
               )}
 
               {isLoading && messages.length > 0 && messages[messages.length - 1].role === "user" && (
                 <div className="flex justify-start">
-                  <div className="px-4 py-3 rounded-2xl bg-zinc-800/50 border border-zinc-700/50 flex gap-1 items-center h-[40px]">
-                    <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce" />
-                    <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce delay-75" />
-                    <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce delay-150" />
+                  <div className="px-4 py-3 rounded-2xl bg-zinc-800/50 border border-zinc-700/50 flex gap-1 items-center h-[40px]" aria-label="AI is typing">
+                    <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce" aria-hidden="true" />
+                    <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce delay-75" aria-hidden="true" />
+                    <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce delay-150" aria-hidden="true" />
                   </div>
                 </div>
               )}
@@ -153,19 +196,30 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
             {/* Input */}
             <div className="p-4 bg-zinc-900/30 border-t border-zinc-800/50">
               <form onSubmit={handleSubmit} className="relative flex items-center">
+                <label htmlFor="chat-input" className="sr-only">
+                  Message Aswin&apos;s AI
+                </label>
                 <input
+                  id="chat-input"
                   value={input}
                   onChange={handleInputChange}
                   placeholder="Ask a question..."
                   disabled={isLoading}
+                  maxLength={2000}
                   className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-2xl py-3 pl-4 pr-12 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-white/30 transition-all disabled:opacity-50"
                 />
+                {input.length > 1500 && (
+                  <span className={`absolute right-12 bottom-3 text-[10px] ${input.length > 1800 ? "text-red-400" : "text-zinc-500"}`}>
+                    {input.length}/2000
+                  </span>
+                )}
                 <button
                   type="submit"
                   disabled={isLoading || !input.trim()}
+                  aria-label="Send message"
                   className="absolute right-2 p-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-xl transition-colors disabled:opacity-50"
                 >
-                  <Send className="w-4 h-4" />
+                  <Send className="w-4 h-4" aria-hidden="true" />
                 </button>
               </form>
             </div>
