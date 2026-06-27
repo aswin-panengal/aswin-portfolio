@@ -1,12 +1,32 @@
-# Python Virtual Environment
+# ── Python ────────────────────────────────────────────────────────────────────
 .env_aswin/
 __pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
 
-# Node / Next.js
+# ── Environment & secrets (NEVER push these) ──────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── RAG knowledge base & local AI tooling (keep off GitHub) ───────────────────
+aswin_knowledge_base.md
+.agents/
+
+# ── Node / Next.js (handled by web/.gitignore but repeated for root safety) ───
 node_modules/
 .next/
 out/
 
-# Secret Keys (NEVER PUSH THESE)
-.env
-.env.local
+# ── OS & editor ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
