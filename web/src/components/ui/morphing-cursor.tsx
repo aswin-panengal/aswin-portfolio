@@ -20,7 +20,7 @@ export function MagneticText({ text, hoverText = text, className }: MagneticText
   const targetPos    = useRef({ x: 0, y: 0 });
   const currentPos   = useRef({ x: 0, y: 0 });
   const frameRef     = useRef<number | undefined>(undefined);
-  const isActiveRef  = useRef(false); // ref mirror so the rAF loop can read it without stale closure
+  const isActiveRef  = useRef(false);
 
   useEffect(() => {
     const updateSize = () => {
@@ -36,9 +36,9 @@ export function MagneticText({ text, hoverText = text, className }: MagneticText
     return () => window.removeEventListener("resize", updateSize);
   }, []);
 
-  // rAF loop — only runs while active or while lerping back to zero after deactivation.
+  // rAF loop — only runs while active or lerping back to zero after deactivation.
   const startLoop = useCallback(() => {
-    if (frameRef.current) return; // already running
+    if (frameRef.current) return;
 
     const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
@@ -55,7 +55,6 @@ export function MagneticText({ text, hoverText = text, className }: MagneticText
           `translate(${-currentPos.current.x}px, ${-currentPos.current.y}px)`;
       }
 
-      // Keep running while active, or until position has settled back to zero
       const settled =
         !isActiveRef.current &&
         Math.abs(currentPos.current.x - targetPos.current.x) < 0.3 &&
@@ -73,8 +72,6 @@ export function MagneticText({ text, hoverText = text, className }: MagneticText
   }, []);
 
   const stopLoop = useCallback(() => {
-    // Don't cancel — let the loop detect "settled" and exit naturally for smooth return
-    // Just reset the target so it lerps back to origin
     targetPos.current = { x: 0, y: 0 };
   }, []);
 
@@ -103,7 +100,7 @@ export function MagneticText({ text, hoverText = text, className }: MagneticText
   const handleMouseLeave = useCallback(() => {
     isActiveRef.current = false;
     setIsActive(false);
-    stopLoop(); // target → (0,0), loop exits when settled
+    stopLoop();
   }, [stopLoop]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
@@ -111,14 +108,14 @@ export function MagneticText({ text, hoverText = text, className }: MagneticText
     const pos = getPosFromClient(touch.clientX, touch.clientY);
     if (pos) {
       targetPos.current = pos;
-      currentPos.current = pos; // snap to finger, no initial lerp jump
+      currentPos.current = pos;
     }
     isActiveRef.current = true;
     setIsActive(true);
     startLoop();
   }, [startLoop]);
 
-  // Updates targetPos as the finger drags — rAF loop lerps toward it every frame.
+  // Updates targetPos as finger drags — rAF loop lerps toward it every frame.
   // Pure ref write: zero re-renders, zero DOM mutations per event.
   const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     const touch = e.touches[0];
@@ -132,7 +129,6 @@ export function MagneticText({ text, hoverText = text, className }: MagneticText
     stopLoop();
   }, [stopLoop]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
   }, []);
@@ -140,23 +136,34 @@ export function MagneticText({ text, hoverText = text, className }: MagneticText
   return (
     <div
       ref={containerRef}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
       className={cn(
         "relative inline-flex items-center justify-start cursor-none select-none touch-none",
         className
       )}
     >
+      {/*
+        Expanded hit area — extends ~38px (≈1cm) beyond the text bounds on all sides.
+        Sits above text spans in z-order so it catches all pointer/touch events.
+        The containerRef stays on the parent for accurate coordinate calculation.
+      */}
+      <div
+        aria-hidden="true"
+        className="absolute touch-none"
+        style={{ inset: "-38px", zIndex: 10 }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onMouseMove={handleMouseMove}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      />
+
       {/* Invisible spacer keeps container wide enough for the longer string */}
       <span className="font-bold tracking-tight opacity-0 pointer-events-none whitespace-nowrap" aria-hidden>
         {hoverText}
       </span>
-      {/* Visible static text */}
-      <span className="absolute left-0 font-bold tracking-tight text-white whitespace-nowrap">
+      {/* Visible static text — pointer-events-none so hit area above it handles events */}
+      <span className="absolute left-0 font-bold tracking-tight text-white whitespace-nowrap pointer-events-none">
         {text}
       </span>
 
@@ -168,6 +175,7 @@ export function MagneticText({ text, hoverText = text, className }: MagneticText
           height: isActive ? 140 : 0,
           transition: "width 0.5s cubic-bezier(0.33,1,0.68,1), height 0.5s cubic-bezier(0.33,1,0.68,1)",
           willChange: "transform, width, height",
+          zIndex: 20, // above hit area
         }}
       >
         <div

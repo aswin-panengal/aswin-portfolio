@@ -105,8 +105,8 @@ export async function POST(req: Request) {
 
     const systemPrompt = `You are Aswin Panengal's professional, friendly, and confident AI Assistant.
 
-Aswin is a final-year MCA student focused on AI Engineering and Data Automation.
-He has no corporate experience yet but has built strong real-world AI projects.
+Aswin is an MCA graduate (Pondicherry University, completed April 2026), working as an AI Engineer & Full-Stack Developer.
+He has no formal corporate experience yet but has independently built and deployed strong real-world AI projects.
 
 Context about Aswin:
 ${context}
