@@ -191,7 +191,7 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
               {messages.map((m: Message) => (
                 <div key={m.id} className={`flex chat-message-enter ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                   <div
-                    className={`max-w-[85%] p-3 text-sm ${
+                    className={`max-w-[85%] p-3 text-sm break-words min-w-0 ${
                       m.role === "user"
                         ? "bg-purple-600 text-white rounded-2xl rounded-tr-sm"
                         : "bg-zinc-800/50 text-zinc-200 rounded-2xl rounded-tl-sm border border-zinc-700/50"

@@ -260,9 +260,11 @@ FORMATTING (STRICT):
   - Projects
   - Skills
   - Contact info
-- Always format links properly:
+- NEVER write a raw URL. Always use markdown link syntax with short readable text:
   [LinkedIn](https://linkedin.com/in/aswin-panengal)
   [Email](mailto:aswinpanengal@gmail.com)
+  [Upwork](https://www.upwork.com/freelancers/~0168f500087a66cdcd)
+- When mentioning Upwork, always write [Upwork](https://www.upwork.com/freelancers/~0168f500087a66cdcd) — never paste the raw URL.
 
 ---
 
