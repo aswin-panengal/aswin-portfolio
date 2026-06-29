@@ -31,7 +31,6 @@ export const skillsConfig: SkillConfig[] = [
   { id: "docker",     orbitRadius: 175, size: 48, speed: -0.45, phaseShift: (4 * Math.PI) / 3,   label: "Docker",     Icon: SiDocker,     iconColor: "#2496ED" },
 ];
 
-// ── Orbit ring ───────────────────────────────────────────────────────────────
 const OrbitRing = memo(({ radius }: { radius: number }) => (
   <div
     className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
@@ -56,8 +55,7 @@ const OrbitRing = memo(({ radius }: { radius: number }) => (
 ));
 OrbitRing.displayName = "OrbitRing";
 
-// ── Main component ───────────────────────────────────────────────────────────
-// Positions are written directly to DOM via refs — zero React re-renders per frame.
+// Positions written directly to DOM via refs — zero React re-renders per frame.
 export default function OrbitingSkills() {
   const nodeRefs = useRef<(HTMLDivElement | null)[]>([]);
   const timeRef  = useRef(0);
@@ -116,7 +114,7 @@ export default function OrbitingSkills() {
         </svg>
       </div>
 
-      {/* Skill nodes — position via DOM refs, hover via CSS only (no React state) */}
+      {/* Positions driven by DOM refs. Hover scale uses inline style mutation, not React state. */}
       {skillsConfig.map((cfg, i) => (
         <div
           key={cfg.id}
@@ -143,7 +141,7 @@ export default function OrbitingSkills() {
           >
             <cfg.Icon style={{ color: cfg.iconColor, width: cfg.size * 0.44, height: cfg.size * 0.44 }} />
 
-            {/* Tooltip — CSS transition only, no state */}
+            {/* CSS-only tooltip — no state, no re-render on hover */}
             <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-zinc-900 border border-white/10 rounded-md text-[10px] text-zinc-300 whitespace-nowrap pointer-events-none z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               {cfg.label}
             </div>

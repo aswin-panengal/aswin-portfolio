@@ -36,7 +36,7 @@ export function MagneticText({ text, hoverText = text, className }: MagneticText
     return () => window.removeEventListener("resize", updateSize);
   }, []);
 
-  // rAF loop — only runs while active or lerping back to zero after deactivation.
+  // Keeps ticking after deactivation until currentPos lerps back to zero.
   const startLoop = useCallback(() => {
     if (frameRef.current) return;
 
@@ -115,8 +115,7 @@ export function MagneticText({ text, hoverText = text, className }: MagneticText
     startLoop();
   }, [startLoop]);
 
-  // Updates targetPos as finger drags — rAF loop lerps toward it every frame.
-  // Pure ref write: zero re-renders, zero DOM mutations per event.
+  // Pure ref write — rAF loop already running from touchStart, zero re-renders.
   const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     const touch = e.touches[0];
     const pos = getPosFromClient(touch.clientX, touch.clientY);
@@ -141,11 +140,7 @@ export function MagneticText({ text, hoverText = text, className }: MagneticText
         className
       )}
     >
-      {/*
-        Expanded hit area — extends ~38px (≈1cm) beyond the text bounds on all sides.
-        Sits above text spans in z-order so it catches all pointer/touch events.
-        The containerRef stays on the parent for accurate coordinate calculation.
-      */}
+      {/* Extends 38px beyond text on all sides. containerRef stays on parent so getBoundingClientRect() stays accurate. */}
       <div
         aria-hidden="true"
         className="absolute touch-none"
@@ -158,11 +153,11 @@ export function MagneticText({ text, hoverText = text, className }: MagneticText
         onTouchEnd={handleTouchEnd}
       />
 
-      {/* Invisible spacer keeps container wide enough for the longer string */}
+      {/* Spacer holds layout width to the longer string, preventing shift on morph */}
       <span className="font-bold tracking-tight opacity-0 pointer-events-none whitespace-nowrap" aria-hidden>
         {hoverText}
       </span>
-      {/* Visible static text — pointer-events-none so hit area above it handles events */}
+      {/* pointer-events-none — hit area overlay handles all events */}
       <span className="absolute left-0 font-bold tracking-tight text-white whitespace-nowrap pointer-events-none">
         {text}
       </span>
@@ -175,7 +170,7 @@ export function MagneticText({ text, hoverText = text, className }: MagneticText
           height: isActive ? 140 : 0,
           transition: "width 0.5s cubic-bezier(0.33,1,0.68,1), height 0.5s cubic-bezier(0.33,1,0.68,1)",
           willChange: "transform, width, height",
-          zIndex: 20, // above hit area
+          zIndex: 20,
         }}
       >
         <div

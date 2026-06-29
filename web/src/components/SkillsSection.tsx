@@ -55,7 +55,7 @@ const EASE = [0.22, 1, 0.36, 1] as [number, number, number, number];
 export function SkillsSection() {
   const prefersReducedMotion = useReducedMotion();
 
-  // Variants defined inside component so they respect useReducedMotion
+  // Variants inside component so they close over prefersReducedMotion
   const fade = useMemo(() => ({
     hidden: { opacity: 0, y: prefersReducedMotion ? 0 : 24 },
     show:   { opacity: 1, y: 0, transition: { duration: prefersReducedMotion ? 0 : 0.55, ease: EASE } },
@@ -74,7 +74,6 @@ export function SkillsSection() {
   return (
     <section id="skills" className="min-h-screen flex flex-col items-center justify-center px-6 py-24 bg-black">
 
-      {/* Heading */}
       <motion.div
         variants={fade}
         initial="hidden"
@@ -85,10 +84,8 @@ export function SkillsSection() {
         <h2 className="text-3xl font-bold text-white">Tech Stack</h2>
       </motion.div>
 
-      {/* Two-column body */}
       <div className="w-full max-w-5xl flex flex-col lg:flex-row items-center lg:items-start gap-12 lg:gap-16">
 
-        {/* LEFT — skill categories */}
         <div className="order-2 lg:order-1 flex-1 w-full space-y-8">
           {SKILL_GROUPS.map((group, gi) => (
             <motion.div
@@ -99,12 +96,10 @@ export function SkillsSection() {
               viewport={{ once: true, margin: "-40px" }}
               transition={{ delay: gi * 0.1 }}
             >
-              {/* Group header */}
               <p className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-3">
                 {group.label}
               </p>
 
-              {/* Skill badges */}
               <motion.div
                 variants={stagger}
                 initial="hidden"
@@ -127,7 +122,7 @@ export function SkillsSection() {
           ))}
         </div>
 
-        {/* RIGHT — orbit (scaled on small screens to prevent viewport overflow) */}
+        {/* scale-75→100 shrinks orbit on small viewports — orbit radius overflows 300px container otherwise */}
         <motion.div
           variants={fade}
           initial="hidden"

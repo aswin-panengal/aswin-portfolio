@@ -30,7 +30,7 @@ body {
   background-size: 32px 32px;
 }
 
-/* ── Mobile performance: strip backdrop-blur (framebuffer reads are expensive on mobile GPUs) */
+/* backdrop-blur triggers framebuffer reads; mobile GPUs can't sustain 60fps with it */
 @media (max-width: 767px) {
   .backdrop-blur-sm,
   .backdrop-blur-md,
@@ -41,7 +41,28 @@ body {
   }
 }
 
-/* ── Touch device: prevent CSS hover states from sticking after tap ── */
+/* Chat message entrance — opacity + transform only (GPU composited, no layout reflow).
+   animation-fill-mode: both starts from the `from` state before the first frame.
+   Skipped entirely when the user has reduced motion enabled. */
+@keyframes chat-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .chat-message-enter {
+    animation: chat-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+/* touch-none (touch-action:none) is needed for the MagneticText hit area on desktop.
+   On coarse-pointer (touch) devices it would block scroll through that zone — reset it. */
+@media (pointer: coarse) {
+  .touch-none {
+    touch-action: auto !important;
+  }
+}
+
+/* Touch browsers fire :hover on tap and never clear it — reset group-hover states */
 @media (hover: none) {
   .group:hover .group-hover\:opacity-100 { opacity: 0 !important; }
   .group:hover .group-hover\:border-white\/20 { border-color: rgb(255 255 255 / 0.08) !important; }

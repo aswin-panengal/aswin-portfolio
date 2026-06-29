@@ -74,12 +74,22 @@ const PROJECTS: Project[] = [
   },
 ];
 
+/**
+ * Projects grid with a Framer Motion detail modal.
+ *
+ * Three concerns run concurrently:
+ *   - Card animations: staggered entrance on scroll, spring hover lift
+ *   - Modal lifecycle: AnimatePresence mount/unmount, WCAG 2.1 focus trap, Escape-to-dismiss
+ *   - Image resilience: imgError resets on project change so a failed image on one card
+ *     doesn't suppress the screenshot in the next modal
+ *
+ * On modal close, focus returns to the card that triggered it (WCAG 2.4.3 Focus Order).
+ */
 export function ProjectsSection() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [imgError, setImgError] = useState(false);
   const prefersReducedMotion = useReducedMotion();
 
-  // Focus management refs
   const modalRef       = useRef<HTMLDivElement>(null);
   const triggerRef     = useRef<HTMLElement | null>(null);
 
@@ -89,13 +99,14 @@ export function ProjectsSection() {
     return () => window.removeEventListener("keydown", onKey);
   }, [selectedProject]);
 
-  // Reset image error state when a different project is selected
   useEffect(() => { setImgError(false); }, [selectedProject]);
 
-  // Focus trap + focus return
+  // WCAG 2.1 §2.4.3 — focus trap keeps keyboard navigation inside the modal and returns
+  // focus to the originating card on close. rAF defers the initial focus call until after
+  // AnimatePresence commits the modal to the DOM; querying focusable nodes before that
+  // frame returns an empty NodeList.
   useEffect(() => {
     if (!selectedProject) {
-      // Return focus to the card that opened the modal
       triggerRef.current?.focus();
       triggerRef.current = null;
       return;
@@ -104,7 +115,6 @@ export function ProjectsSection() {
     const modal = modalRef.current;
     const FOCUSABLE = 'button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])';
     const nodes = Array.from(modal.querySelectorAll<HTMLElement>(FOCUSABLE));
-    // Focus first element (close button) after animation frame
     requestAnimationFrame(() => nodes[0]?.focus());
 
     const onTab = (e: KeyboardEvent) => {
@@ -139,7 +149,6 @@ export function ProjectsSection() {
     <>
       <section id="projects" className="min-h-screen flex flex-col items-center justify-center px-6 py-24 bg-black">
         <div className="max-w-5xl w-full">
-          {/* Heading */}
           <motion.div
             initial={{ opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 24 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -155,7 +164,6 @@ export function ProjectsSection() {
             <h2 className="text-3xl font-bold text-white">Projects</h2>
           </motion.div>
 
-          {/* Grid */}
           <motion.div
             variants={containerVariants}
             initial="hidden"
@@ -185,11 +193,11 @@ export function ProjectsSection() {
                 aria-label={`View details for ${project.title}`}
                 className="relative group cursor-pointer"
               >
-                {/* Gradient glow on hover */}
+                {/* blur-sm gradient sibling rather than box-shadow — box-shadow clips to
+                    border-radius on some GPU compositing paths; the absolute sibling doesn't. */}
                 <div className="absolute -inset-[1px] rounded-3xl bg-gradient-to-r from-white/8 to-white/4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm -z-10" aria-hidden="true" />
 
                 <div className="p-8 rounded-3xl border border-zinc-800/50 group-hover:border-white/20 bg-zinc-900/40 backdrop-blur-md hover:bg-zinc-900/80 transition-all flex flex-col h-full">
-                  {/* Category chip */}
                   <span className="self-start text-[10px] font-semibold uppercase tracking-widest text-zinc-500 border border-zinc-800 rounded-full px-2.5 py-0.5 mb-4">
                     {project.category}
                   </span>
@@ -223,7 +231,6 @@ export function ProjectsSection() {
                       )}
                     </div>
 
-                    {/* View details arrow */}
                     <span className="text-xs text-zinc-600 group-hover:text-white transition-colors flex items-center gap-1 shrink-0 ml-3" aria-hidden="true">
                       <span className="overflow-hidden max-w-0 group-hover:max-w-[5rem] transition-all duration-300 whitespace-nowrap">
                         View details
@@ -238,7 +245,6 @@ export function ProjectsSection() {
         </div>
       </section>
 
-      {/* Project Modal */}
       <AnimatePresence>
         {selectedProject && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-6">
@@ -324,7 +330,7 @@ export function ProjectsSection() {
 
               <p className="text-lg text-zinc-300 leading-relaxed mb-10">{selectedProject.longDesc}</p>
 
-              {/* next/image with fixed aspect-ratio container — eliminates CLS */}
+              {/* aspect-video container prevents CLS while the image loads */}
               <div className="relative w-full aspect-video overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 shadow-inner">
                 {selectedProject.image && !imgError ? (
                   <Image

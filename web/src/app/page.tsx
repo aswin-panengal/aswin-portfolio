@@ -13,12 +13,25 @@ import { ChatWidget } from "@/components/ChatWidget";
 
 const SECTION_IDS = ["about", "skills", "projects", "experience", "contact"];
 
+/**
+ * Root page — thin orchestrator that composes all portfolio sections.
+ *
+ * Shared state:
+ *   activeTab  — driven by scroll spy; passed to NavPill for the sliding active indicator
+ *   isChatOpen — lifted here so ContactSection can open the chat widget without prop-drilling
+ *                through intermediate components or reaching for a context/store
+ *
+ * `scrollToSection`, `handleCloseChat`, and `handleOpenChat` are stable `useCallback`
+ * references so NavPill and ContactSection don't re-render on every activeTab change.
+ */
 export default function Portfolio() {
   const [activeTab, setActiveTab] = useState("about");
   const [isChatOpen, setIsChatOpen] = useState(false);
   const prefersReducedMotion = useReducedMotion();
 
-  // Scroll spy
+  // threshold: 0.4 — switches the active nav tab once 40% of a section is visible.
+  // Lower values trip too early on fast scrolls; higher values fail on short sections
+  // (e.g. Footer) that never reach 50% viewport coverage.
   useEffect(() => {
     const observers: IntersectionObserver[] = [];
     SECTION_IDS.forEach((id) => {
@@ -39,15 +52,13 @@ export default function Portfolio() {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
-  const handleScrollToProjects = useCallback(() => scrollToSection("projects"), [scrollToSection]);
-  const handleScrollToContact  = useCallback(() => scrollToSection("contact"),  [scrollToSection]);
   const handleCloseChat = useCallback(() => setIsChatOpen(false), []);
   const handleOpenChat  = useCallback(() => setIsChatOpen(true),  []);
 
   return (
     <div className="bg-black text-zinc-300 font-sans selection:bg-purple-500/30 overflow-x-hidden bg-dot-grid">
 
-      {/* Ambient gradient blobs — desktop only, GPU cost not worth it on mobile */}
+      {/* Blobs hidden on mobile — animating blur-3xl is too expensive for mobile GPUs */}
       {!prefersReducedMotion && (
         <div className="hidden md:block fixed inset-0 pointer-events-none overflow-hidden z-0">
           <motion.div
@@ -74,10 +85,7 @@ export default function Portfolio() {
       <NavPill activeTab={activeTab} onTabClick={scrollToSection} />
 
       <main className="relative z-10">
-        <HeroSection
-          onScrollToProjects={handleScrollToProjects}
-          onScrollToContact={handleScrollToContact}
-        />
+        <HeroSection />
         <SkillsSection />
         <ProjectsSection />
         <ExperienceSection />

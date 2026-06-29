@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useMemo } from "react";
+import { useRef, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Terminal, Send, MessageCircle, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -14,10 +14,22 @@ interface ChatWidgetProps {
   mountDelay?: number;
 }
 
+// Extracts the countdown in seconds from the server's rate-limit response body.
+function parseRetryAfter(err: Error): number {
+  const match = err.message.match(/try again in (\d+) seconds?/i);
+  return match ? parseInt(match[1], 10) : 0;
+}
+
+function isDailyLimit(err: Error): boolean {
+  return err.message.toLowerCase().includes("daily limit");
+}
+
 function getFriendlyError(err: Error): string {
   const m = err.message.toLowerCase();
-  if (m.includes("429") || m.includes("rate limit"))
-    return "The AI is busy right now. Please wait a moment and try again.";
+  if (m.includes("daily limit"))
+    return "You've hit the daily message limit. Please come back tomorrow.";
+  if (m.includes("rate limit"))
+    return "Too many messages — the AI needs a short breather.";
   if (m.includes("50") || m.includes("server"))
     return "Something went wrong on our end. Please try again.";
   if (m.includes("fetch") || m.includes("network") || m.includes("failed"))
@@ -25,18 +37,35 @@ function getFriendlyError(err: Error): string {
   return "Something went wrong. Please try again.";
 }
 
+/**
+ * Floating AI chat widget that streams responses from /api/chat.
+ *
+ * Props:
+ *   isOpen     — controlled by the parent; toggling triggers AnimatePresence mount/unmount
+ *   mountDelay — seconds before the FAB appears; set to 1.2 in page.tsx so the button
+ *                doesn't compete visually with the LCP element during initial load
+ *
+ * Stream lifecycle: closing while a response is in-flight calls `stop()` to abort the
+ * underlying fetch before unmounting — without it, the Vercel AI SDK's internal promise
+ * resolves into an unmounted component, silently leaking memory.
+ */
 export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidgetProps) {
+  const [retryIn, setRetryIn] = useState(0);
+
   const { messages, input, handleInputChange, handleSubmit, isLoading, status, error, reload, stop } = useChat({
     api: "/api/chat",
     streamProtocol: "data",
     onError: (err) => {
       console.error("Chat error:", err);
+      const secs = parseRetryAfter(err);
+      if (secs > 0) setRetryIn(secs);
     },
   });
 
   const messagesEndRef    = useRef<HTMLDivElement>(null);
   const lastMessageIdRef  = useRef<string | undefined>(undefined);
 
+  // Memoized so ReactMarkdown doesn't re-create renderer functions on every streaming token.
   const markdownComponents = useMemo(() => ({
     strong: ({ node: _n, ...props }: React.ComponentPropsWithoutRef<"span"> & { node?: unknown }) =>
       <span className="font-bold text-white" {...props} />,
@@ -59,7 +88,16 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
     },
   }), []);
 
-  // Smooth-scroll only on new messages; instant during token streaming to prevent layout thrashing
+  // Decrements retryIn every second so the Retry button re-enables automatically
+  // when the server's rate-limit window expires.
+  useEffect(() => {
+    if (retryIn <= 0) return;
+    const t = setTimeout(() => setRetryIn((n) => n - 1), 1000);
+    return () => clearTimeout(t);
+  }, [retryIn]);
+
+  // Smooth-scrolls on a new message arrival; uses instant scroll while tokens are streaming —
+  // animating scroll position 20+ times/sec during a fast stream causes layout thrashing.
   useEffect(() => {
     const lastMsg = messages[messages.length - 1];
     if (!lastMsg) return;
@@ -68,6 +106,8 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
     if (isNewMessage) lastMessageIdRef.current = lastMsg.id;
   }, [messages]);
 
+  // Abort the in-flight Groq stream before unmounting to prevent the SDK's fetch
+  // promise from resolving into an unmounted component.
   const handleClose = () => {
     if (isLoading) stop();
     onClose();
@@ -75,7 +115,6 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
 
   return (
     <>
-      {/* Floating button */}
       <AnimatePresence>
         {!isOpen && (
           <motion.button
@@ -101,7 +140,6 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
         )}
       </AnimatePresence>
 
-      {/* Chat window */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -109,12 +147,15 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed bottom-8 right-8 z-[120] w-[400px] h-[600px] max-w-[calc(100vw-2rem)] flex flex-col rounded-3xl border border-zinc-800/80 bg-zinc-950/80 backdrop-blur-2xl shadow-2xl overflow-hidden"
+            className="fixed z-[120] w-[400px] h-[600px] max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-5rem)] flex flex-col rounded-3xl border border-zinc-800/80 bg-zinc-950/80 backdrop-blur-2xl shadow-2xl overflow-hidden"
+            style={{
+              bottom: "max(2rem, env(safe-area-inset-bottom))",
+              right:  "max(2rem, env(safe-area-inset-right))",
+            }}
             role="dialog"
             aria-modal="true"
             aria-label="Aswin's AI Assistant"
           >
-            {/* Header */}
             <div className="p-4 border-b border-zinc-800/50 bg-zinc-900/30 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-white/8 rounded-xl">
@@ -131,7 +172,6 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
               </button>
             </div>
 
-            {/* Messages */}
             <div
               className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth"
               aria-live="polite"
@@ -149,7 +189,7 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
               )}
 
               {messages.map((m: Message) => (
-                <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div key={m.id} className={`flex chat-message-enter ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                   <div
                     className={`max-w-[85%] p-3 text-sm ${
                       m.role === "user"
@@ -169,19 +209,22 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
               ))}
 
               {status === "error" && error && (
-                <div className="rounded-2xl border border-red-500/50 bg-red-500/10 p-3 text-sm text-red-200 flex items-center justify-between gap-3">
+                <div className="chat-message-enter rounded-2xl border border-red-500/50 bg-red-500/10 p-3 text-sm text-red-200 flex items-center justify-between gap-3">
                   <span>{getFriendlyError(error)}</span>
-                  <button
-                    onClick={() => reload()}
-                    className="text-xs text-red-300 hover:text-white underline shrink-0"
-                  >
-                    Retry
-                  </button>
+                  {!isDailyLimit(error) && (
+                    <button
+                      onClick={() => { setRetryIn(0); reload(); }}
+                      disabled={retryIn > 0}
+                      className="text-xs text-red-300 hover:text-white underline shrink-0 disabled:opacity-40 disabled:cursor-not-allowed disabled:no-underline"
+                    >
+                      {retryIn > 0 ? `Retry in ${retryIn}s` : "Retry"}
+                    </button>
+                  )}
                 </div>
               )}
 
               {isLoading && messages.length > 0 && messages[messages.length - 1].role === "user" && (
-                <div className="flex justify-start">
+                <div className="flex justify-start chat-message-enter">
                   <div className="px-4 py-3 rounded-2xl bg-zinc-800/50 border border-zinc-700/50 flex gap-1 items-center h-[40px]" aria-label="AI is typing">
                     <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce" aria-hidden="true" />
                     <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce delay-75" aria-hidden="true" />
@@ -193,7 +236,6 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
             <div className="p-4 bg-zinc-900/30 border-t border-zinc-800/50">
               <form onSubmit={handleSubmit} className="relative flex items-center">
                 <label htmlFor="chat-input" className="sr-only">

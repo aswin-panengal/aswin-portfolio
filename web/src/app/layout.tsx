@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Aswin Panengal | Portfolio",
-  description: "Portfolio of Aswin Panengal, an AI enthusiast focused on building intelligent solutions.",
+  description: "Portfolio of Aswin Panengal — AI Engineer & Full-Stack Developer building RAG systems, AI agents, and full-stack web applications.",
 };
 
 // viewport-fit=cover populates env(safe-area-inset-*) on iOS notch / Dynamic Island devices

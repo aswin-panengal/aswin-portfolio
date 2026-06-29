@@ -28,7 +28,6 @@ export function NavPill({ activeTab, onTabClick }: NavPillProps) {
 
   return (
     <>
-      {/* Scroll progress bar — only visible after scrolling */}
       <AnimatePresence>
         {visible && (
           <motion.div
@@ -45,7 +44,6 @@ export function NavPill({ activeTab, onTabClick }: NavPillProps) {
         )}
       </AnimatePresence>
 
-      {/* Floating pill nav — hidden on hero, fades in on scroll */}
       <AnimatePresence>
         {visible && (
           <motion.nav

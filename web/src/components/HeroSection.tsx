@@ -7,12 +7,7 @@ import { MagneticText } from "@/components/ui/morphing-cursor";
 
 const PHOTO_DURATION = 1.2;
 
-interface HeroSectionProps {
-  onScrollToProjects?: () => void;
-  onScrollToContact?: () => void;
-}
-
-export function HeroSection({ onScrollToProjects, onScrollToContact }: HeroSectionProps) {
+export function HeroSection() {
   const prefersReducedMotion = useReducedMotion();
   const { scrollY } = useScroll();
   const imageY = useTransform(scrollY, [0, 800], [0, prefersReducedMotion ? 0 : -30]);
@@ -23,9 +18,8 @@ export function HeroSection({ onScrollToProjects, onScrollToContact }: HeroSecti
   return (
     <section id="about" className="relative min-h-screen flex flex-col lg:flex-row">
 
-      {/* ── Photo side ───────────────────────────────────────────────────── */}
       <div className="relative w-full lg:w-1/2 h-[50vh] lg:h-screen overflow-hidden">
-        {/* Outer: jump-in y+opacity. Inner: parallax+scale. Kept separate to avoid MotionValue conflict. */}
+        {/* Two motion.divs: outer owns entrance (y+opacity), inner owns parallax (y MotionValue). One element can't drive y from both initial and style simultaneously. */}
         <motion.div
           initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 50 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -56,12 +50,11 @@ export function HeroSection({ onScrollToProjects, onScrollToContact }: HeroSecti
         <div className="absolute inset-0 bg-gradient-to-b lg:bg-gradient-to-r from-transparent via-black/40 to-black" />
       </div>
 
-      {/* ── Text side — perspective: 900px establishes the 3D field ─────── */}
+      {/* perspective required for rotateX to produce visible depth on child elements */}
       <div
         className="relative z-10 w-full lg:w-1/2 flex flex-col justify-center px-8 lg:px-16 py-20 bg-black"
         style={{ perspective: "900px" }}
       >
-        {/* "Hi, I'm Aswin." — 3D depth entry: rises from below + rotates into view */}
         <motion.h1
           initial={{
             opacity: 0,
@@ -81,7 +74,6 @@ export function HeroSection({ onScrollToProjects, onScrollToContact }: HeroSecti
           </span>
         </motion.h1>
 
-        {/* Eyebrow — fades in, flanking lines grow outward from centre */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -89,7 +81,7 @@ export function HeroSection({ onScrollToProjects, onScrollToContact }: HeroSecti
           transition={{ duration: 0.7 * d, delay: 0.5 * d }}
           className="flex items-center gap-3 mb-6"
         >
-          {/* Left line — originX: right edge → grows right-to-left */}
+          {/* originX: 1 = scale from right edge, so line grows rightward from center outward */}
           <motion.span
             initial={{ scaleX: 0 }}
             whileInView={{ scaleX: 1 }}
@@ -101,7 +93,7 @@ export function HeroSection({ onScrollToProjects, onScrollToContact }: HeroSecti
           <span className="text-zinc-500 text-xs uppercase tracking-widest font-medium whitespace-nowrap">
             An MCA graduate
           </span>
-          {/* Right line — originX: left edge → grows left-to-right */}
+          {/* originX: 0 = scale from left edge */}
           <motion.span
             initial={{ scaleX: 0 }}
             whileInView={{ scaleX: 1 }}
@@ -112,7 +104,6 @@ export function HeroSection({ onScrollToProjects, onScrollToContact }: HeroSecti
           />
         </motion.div>
 
-        {/* Role — second 3D depth entry, 0.14s offset, slightly more dramatic */}
         <motion.div
           initial={{
             opacity: 0,
@@ -133,7 +124,6 @@ export function HeroSection({ onScrollToProjects, onScrollToContact }: HeroSecti
         </motion.div>
       </div>
 
-      {/* Scroll indicator — appears after all text has settled */}
       <motion.div
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}

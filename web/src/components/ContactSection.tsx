@@ -39,7 +39,6 @@ export function ContactSection({ onOpenChat }: ContactSectionProps) {
       className="min-h-screen flex flex-col items-center justify-center px-6 pb-20 bg-black"
     >
       <div className="text-center max-w-2xl w-full">
-        {/* Shimmer heading — entrance handled by wrapper, shimmer on the h2 itself */}
         <motion.div
           initial={{ opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 24 }}
           whileInView={{ opacity: 1, y: 0 }}

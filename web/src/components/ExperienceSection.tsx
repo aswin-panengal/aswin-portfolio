@@ -27,7 +27,6 @@ export function ExperienceSection() {
   return (
     <section id="experience" className="min-h-screen flex flex-col items-center justify-center px-6 py-24 bg-black">
       <div className="max-w-3xl w-full">
-        {/* Heading */}
         <motion.div
           initial={{ opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 24 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -39,9 +38,7 @@ export function ExperienceSection() {
           <p className="text-zinc-500 text-sm">What I&apos;ve been building</p>
         </motion.div>
 
-        {/* Timeline */}
         <div className="relative pl-10">
-          {/* Animated vertical line */}
           <motion.div
             initial={{ scaleY: 0 }}
             whileInView={{ scaleY: 1 }}
@@ -54,7 +51,6 @@ export function ExperienceSection() {
           <div className="space-y-12">
             {TIMELINE.map((entry, i) => (
               <div key={entry.role} className="relative">
-                {/* Connector dot */}
                 <motion.div
                   initial={{ scale: 0 }}
                   whileInView={{ scale: 1 }}
@@ -68,7 +64,6 @@ export function ExperienceSection() {
                   className={`absolute -left-[26px] top-1.5 w-3 h-3 rounded-full ${entry.color} ${entry.glow}`}
                 />
 
-                {/* Entry card */}
                 <motion.div
                   initial={{ opacity: prefersReducedMotion ? 1 : 0, x: prefersReducedMotion ? 0 : -24 }}
                   whileInView={{ opacity: 1, x: 0 }}
