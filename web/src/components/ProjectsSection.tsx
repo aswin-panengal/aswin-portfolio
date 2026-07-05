@@ -99,7 +99,6 @@ export function ProjectsSection() {
     return () => window.removeEventListener("keydown", onKey);
   }, [selectedProject]);
 
-  useEffect(() => { setImgError(false); }, [selectedProject]);
 
   // WCAG 2.1 §2.4.3 — focus trap keeps keyboard navigation inside the modal and returns
   // focus to the originating card on close. rAF defers the initial focus call until after
@@ -157,9 +156,9 @@ export function ProjectsSection() {
             className="mb-12 text-center"
           >
             <div className="flex items-center gap-4 mb-4 justify-center">
-              <div className="h-px flex-1 max-w-[80px] bg-zinc-800" />
+              <div className="h-px flex-1 max-w-20 bg-zinc-800" />
               <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Featured Work</span>
-              <div className="h-px flex-1 max-w-[80px] bg-zinc-800" />
+              <div className="h-px flex-1 max-w-20 bg-zinc-800" />
             </div>
             <h2 className="text-3xl font-bold text-white">Projects</h2>
           </motion.div>
@@ -180,12 +179,14 @@ export function ProjectsSection() {
                 onClick={(e) => {
                   triggerRef.current = e.currentTarget as HTMLElement;
                   setSelectedProject(project);
+                  setImgError(false);
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
                     triggerRef.current = e.currentTarget as HTMLElement;
                     setSelectedProject(project);
+                    setImgError(false);
                   }
                 }}
                 role="button"
@@ -195,9 +196,9 @@ export function ProjectsSection() {
               >
                 {/* blur-sm gradient sibling rather than box-shadow — box-shadow clips to
                     border-radius on some GPU compositing paths; the absolute sibling doesn't. */}
-                <div className="absolute -inset-[1px] rounded-3xl bg-gradient-to-r from-white/8 to-white/4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm -z-10" aria-hidden="true" />
+                <div className="absolute -inset-px rounded-3xl bg-linear-to-r from-white/8 to-white/4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm -z-10" aria-hidden="true" />
 
-                <div className="p-8 rounded-3xl border border-zinc-800/50 group-hover:border-white/20 bg-zinc-900/40 backdrop-blur-md hover:bg-zinc-900/80 transition-all flex flex-col h-full">
+                <div className="p-8 rounded-3xl border border-zinc-800/50 group-hover:border-white/20 bg-zinc-900/40 backdrop-blur-md hover:bg-zinc-900/80 transition-colors flex flex-col h-full">
                   <span className="self-start text-[10px] font-semibold uppercase tracking-widest text-zinc-500 border border-zinc-800 rounded-full px-2.5 py-0.5 mb-4">
                     {project.category}
                   </span>
@@ -212,7 +213,7 @@ export function ProjectsSection() {
                   </motion.div>
 
                   <h3 className="text-2xl text-white font-semibold mb-3">{project.title}</h3>
-                  <p className="text-zinc-400 mb-6 leading-relaxed flex-grow">{project.shortDesc}</p>
+                  <p className="text-zinc-400 mb-6 leading-relaxed grow">{project.shortDesc}</p>
 
                   <div className="flex items-center justify-between mt-auto">
                     <div className="flex gap-2 flex-wrap">
@@ -232,7 +233,7 @@ export function ProjectsSection() {
                     </div>
 
                     <span className="text-xs text-zinc-600 group-hover:text-white transition-colors flex items-center gap-1 shrink-0 ml-3" aria-hidden="true">
-                      <span className="overflow-hidden max-w-0 group-hover:max-w-[5rem] transition-all duration-300 whitespace-nowrap">
+                      <span className="overflow-hidden max-w-0 group-hover:max-w-20 transition-all duration-300 whitespace-nowrap">
                         View details
                       </span>
                       →
@@ -247,7 +248,7 @@ export function ProjectsSection() {
 
       <AnimatePresence>
         {selectedProject && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-6">
+          <div className="fixed inset-0 z-60 flex items-center justify-center p-4 md:p-6">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

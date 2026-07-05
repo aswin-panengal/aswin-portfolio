@@ -38,7 +38,7 @@ export function NavPill({ activeTab, onTabClick }: NavPillProps) {
               scaleX: prefersReducedMotion ? 1 : scrollYProgress,
               transformOrigin: "left",
             }}
-            className="fixed top-0 left-0 right-0 h-px bg-white/50 z-[200]"
+            className="fixed top-0 left-0 right-0 h-px bg-white/50 z-200"
             aria-hidden="true"
           />
         )}

@@ -13,8 +13,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Aswin Panengal | Portfolio",
-  description: "Portfolio of Aswin Panengal — AI Engineer & Full-Stack Developer building RAG systems, AI agents, and full-stack web applications.",
+  title: "Aswin Panengal — AI Engineer",
+  description: "Aswin Panengal — AI Engineer building RAG pipelines, LLM agents, and full-stack AI applications.",
+  openGraph: {
+    title: "Aswin Panengal — AI Engineer",
+    description: "AI Engineer building RAG pipelines, LLM agents, and full-stack AI applications.",
+    url: "https://aswinpanengal.vercel.app",
+    siteName: "Aswin Panengal",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Aswin Panengal — AI Engineer",
+    description: "AI Engineer building RAG pipelines, LLM agents, and full-stack AI applications.",
+  },
 };
 
 // viewport-fit=cover populates env(safe-area-inset-*) on iOS notch / Dynamic Island devices

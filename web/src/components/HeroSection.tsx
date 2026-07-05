@@ -47,7 +47,7 @@ export function HeroSection() {
             />
           </motion.div>
         </motion.div>
-        <div className="absolute inset-0 bg-gradient-to-b lg:bg-gradient-to-r from-transparent via-black/40 to-black" />
+        <div className="absolute inset-0 bg-linear-to-b lg:bg-linear-to-r from-transparent via-black/40 to-black" />
       </div>
 
       {/* perspective required for rotateX to produce visible depth on child elements */}
@@ -69,7 +69,7 @@ export function HeroSection() {
           className="text-6xl md:text-8xl font-bold tracking-tight text-white mb-6"
         >
           Hi, I&apos;m{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-500">
+          <span className="text-transparent bg-clip-text bg-linear-to-r from-purple-400 to-blue-500">
             Aswin.
           </span>
         </motion.h1>
@@ -88,7 +88,7 @@ export function HeroSection() {
             viewport={{ once: false, amount: 0.3 }}
             transition={{ duration: 0.7 * d, delay: 0.5 * d, ease }}
             style={{ originX: 1 }}
-            className="block h-px w-12 bg-zinc-700 flex-shrink-0"
+            className="block h-px w-12 bg-zinc-700 shrink-0"
           />
           <span className="text-zinc-500 text-xs uppercase tracking-widest font-medium whitespace-nowrap">
             An MCA graduate
@@ -100,7 +100,7 @@ export function HeroSection() {
             viewport={{ once: false, amount: 0.3 }}
             transition={{ duration: 0.7 * d, delay: 0.5 * d, ease }}
             style={{ originX: 0 }}
-            className="block h-px w-12 bg-zinc-700 flex-shrink-0"
+            className="block h-px w-12 bg-zinc-700 shrink-0"
           />
         </motion.div>
 
@@ -117,7 +117,7 @@ export function HeroSection() {
           transition={{ duration: 1.05 * d, delay: 0.64 * d, ease }}
         >
           <MagneticText
-            text="AI Systems Builder"
+            text="AI Engineer"
             hoverText="Freelance Web Developer"
             className="text-2xl md:text-3xl"
           />

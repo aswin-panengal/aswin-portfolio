@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, memo } from "react";
+import React, { useEffect, useRef, memo, useMemo } from "react";
 import {
   SiPython,
   SiTypescript,
@@ -62,8 +62,23 @@ export default function OrbitingSkills() {
   const lastRef  = useRef(0);
   const pausedRef = useRef(false);
   const frameRef  = useRef<number | undefined>(undefined);
+  const reducedMotion = useMemo(
+    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    []
+  );
 
   useEffect(() => {
+    if (reducedMotion) {
+      skillsConfig.forEach((cfg, i) => {
+        const el = nodeRefs.current[i];
+        if (!el) return;
+        const x = Math.cos(cfg.phaseShift) * cfg.orbitRadius;
+        const y = Math.sin(cfg.phaseShift) * cfg.orbitRadius;
+        el.style.transform = `translate(calc(${x}px - 50%), calc(${y}px - 50%))`;
+      });
+      return;
+    }
+
     lastRef.current = performance.now();
 
     const loop = (now: number) => {
@@ -85,11 +100,11 @@ export default function OrbitingSkills() {
 
     frameRef.current = requestAnimationFrame(loop);
     return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
-  }, []);
+  }, [reducedMotion]);
 
   return (
     <div
-      className="relative w-[300px] h-[300px] md:w-[420px] md:h-[420px] flex items-center justify-center flex-shrink-0"
+      className="relative w-[300px] h-[300px] md:w-[420px] md:h-[420px] flex items-center justify-center shrink-0"
       onMouseEnter={() => { pausedRef.current = true; }}
       onMouseLeave={() => { pausedRef.current = false; }}
     >
@@ -97,7 +112,7 @@ export default function OrbitingSkills() {
       <OrbitRing radius={175} />
 
       {/* Center node */}
-      <div className="relative z-10 w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center border border-white/10 bg-white/[0.04] shadow-xl">
+      <div className="relative z-10 w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center border border-white/10 bg-white/4 shadow-xl">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="20"
@@ -123,7 +138,7 @@ export default function OrbitingSkills() {
           style={{ width: cfg.size, height: cfg.size, zIndex: 10, willChange: "transform" }}
         >
           <div
-            className="relative w-full h-full rounded-full flex items-center justify-center cursor-pointer border border-white/10 bg-white/[0.05]"
+            className="relative w-full h-full rounded-full flex items-center justify-center cursor-pointer border border-white/10 bg-white/5"
             style={{
               transition: "transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s",
               boxShadow: "0 2px 10px rgba(0,0,0,0.35)",

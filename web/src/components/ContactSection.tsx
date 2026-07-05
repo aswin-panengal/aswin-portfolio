@@ -46,21 +46,18 @@ export function ContactSection({ onOpenChat }: ContactSectionProps) {
           transition={{ duration: prefersReducedMotion ? 0 : 0.6, ease: "easeOut" }}
           className="mb-4"
         >
-          <motion.h2
-            animate={prefersReducedMotion ? {} : { backgroundPosition: ["0% 50%", "200% 50%"] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+          <h2
             style={{
               backgroundSize: "200% auto",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
               backgroundImage: "linear-gradient(90deg, #71717a, #ffffff, #d4d4d8, #ffffff, #71717a)",
-              willChange: "background-position",
             }}
-            className="text-4xl md:text-5xl font-bold"
+            className="text-4xl md:text-5xl font-bold shimmer-text"
           >
             Let&apos;s Build Something.
-          </motion.h2>
+          </h2>
         </motion.div>
 
         <motion.p
@@ -96,7 +93,7 @@ export function ContactSection({ onOpenChat }: ContactSectionProps) {
             whileHover={{ y: prefersReducedMotion ? 0 : -3 }}
             whileTap={{ scale: prefersReducedMotion ? 1 : 0.95 }}
             onClick={handleCopyEmail}
-            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-red-500/20 hover:border-red-500/50 transition-colors text-white w-[140px]"
+            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-red-500/20 hover:border-red-500/50 transition-colors text-white w-35"
           >
             {copied ? (
               <Check className="w-5 h-5 text-green-400" />

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, useReducedMotion } from "framer-motion";
+import dynamic from "next/dynamic";
 import { NavPill } from "@/components/NavPill";
 import { HeroSection } from "@/components/HeroSection";
 import { SkillsSection } from "@/components/SkillsSection";
@@ -9,7 +10,13 @@ import { ProjectsSection } from "@/components/ProjectsSection";
 import { ExperienceSection } from "@/components/ExperienceSection";
 import { ContactSection } from "@/components/ContactSection";
 import { Footer } from "@/components/Footer";
-import { ChatWidget } from "@/components/ChatWidget";
+
+// Dynamic import: react-markdown + Vercel AI SDK are heavy (~140 KB gz).
+// The FAB has a 1.2s mountDelay, so the chunk resolves before the button appears.
+const ChatWidget = dynamic(
+  () => import("@/components/ChatWidget").then(m => ({ default: m.ChatWidget })),
+  { ssr: false }
+);
 
 const SECTION_IDS = ["about", "skills", "projects", "experience", "contact"];
 
@@ -65,19 +72,19 @@ export default function Portfolio() {
             animate={{ x: [0, 40, -20, 30, 0], y: [0, -30, 40, -10, 0] }}
             transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
             style={{ willChange: "transform" }}
-            className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/[0.025] rounded-full blur-3xl"
+            className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/2.5 rounded-full blur-3xl"
           />
           <motion.div
             animate={{ x: [0, -50, 20, -30, 0], y: [0, 40, -20, 30, 0] }}
             transition={{ duration: 16, repeat: Infinity, ease: "easeInOut", delay: 2 }}
             style={{ willChange: "transform" }}
-            className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-white/[0.02] rounded-full blur-3xl"
+            className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-white/2 rounded-full blur-3xl"
           />
           <motion.div
             animate={{ x: [0, 30, -40, 10, 0], y: [0, 20, -30, 40, 0] }}
             transition={{ duration: 20, repeat: Infinity, ease: "easeInOut", delay: 4 }}
             style={{ willChange: "transform" }}
-            className="absolute top-2/3 left-1/2 w-64 h-64 bg-white/[0.015] rounded-full blur-3xl"
+            className="absolute top-2/3 left-1/2 w-64 h-64 bg-white/1.5 rounded-full blur-3xl"
           />
         </div>
       )}

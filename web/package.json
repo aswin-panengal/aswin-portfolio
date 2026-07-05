@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint src"
   },
   "dependencies": {
     "@ai-sdk/google": "^1.2.22",
@@ -29,6 +29,8 @@
   "devDependencies": {
     "@types/node": "^25.5.2",
     "@types/react": "^19.2.14",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.10",
     "typescript": "latest"
   }
 }

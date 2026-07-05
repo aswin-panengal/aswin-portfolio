@@ -112,7 +112,7 @@ export function SkillsSection() {
                     key={skill}
                     variants={chip}
                     whileHover={prefersReducedMotion ? {} : { scale: 1.05, y: -1 }}
-                    className="px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.04] text-zinc-300 text-xs font-medium cursor-default select-none hover:bg-white/[0.08] hover:border-white/20 hover:text-white transition-colors"
+                    className="px-3 py-1.5 rounded-full border border-white/10 bg-white/4 text-zinc-300 text-xs font-medium cursor-default select-none hover:bg-white/8 hover:border-white/20 hover:text-white transition-colors"
                   >
                     {skill}
                   </motion.span>
@@ -128,7 +128,7 @@ export function SkillsSection() {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true }}
-          className="order-1 lg:order-2 flex-shrink-0 flex flex-col items-center overflow-hidden w-full lg:w-auto"
+          className="order-1 lg:order-2 shrink-0 flex flex-col items-center overflow-hidden w-full lg:w-auto"
         >
           <div className="scale-75 sm:scale-90 md:scale-100 origin-center">
             <OrbitingSkills />

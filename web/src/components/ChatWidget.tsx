@@ -124,7 +124,7 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
             transition={{ delay: mountDelay, duration: 0.4, ease: "easeOut" }}
             onClick={onOpen}
             aria-label="Open AI chat assistant"
-            className="fixed right-6 md:right-8 z-[100] bg-purple-600 hover:bg-purple-500 text-white rounded-full shadow-2xl shadow-purple-900/50 transition-colors group
+            className="fixed right-6 md:right-8 z-100 bg-purple-600 hover:bg-purple-500 text-white rounded-full shadow-2xl shadow-purple-900/50 transition-colors group
               p-4
               md:flex md:items-center md:gap-3 md:pl-4 md:pr-4"
             style={{ bottom: "max(1.5rem, calc(env(safe-area-inset-bottom) + 0.5rem))" }}
@@ -132,7 +132,7 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
             <MessageCircle className="w-6 h-6 shrink-0" aria-hidden="true" />
             <span className="hidden md:flex font-medium items-center gap-1 overflow-hidden">
               <span className="whitespace-nowrap">Ask</span>
-              <span className="max-w-0 group-hover:max-w-[6rem] overflow-hidden transition-all duration-300 ease-in-out whitespace-nowrap">
+              <span className="max-w-0 group-hover:max-w-24 overflow-hidden transition-all duration-300 ease-in-out whitespace-nowrap">
                 about me
               </span>
             </span>
@@ -147,7 +147,7 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed z-[120] w-[400px] h-[600px] max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-5rem)] flex flex-col rounded-3xl border border-zinc-800/80 bg-zinc-950/80 backdrop-blur-2xl shadow-2xl overflow-hidden"
+            className="fixed z-120 w-100 h-150 max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-5rem)] flex flex-col rounded-3xl border border-zinc-800/80 bg-zinc-950/80 backdrop-blur-2xl shadow-2xl overflow-hidden"
             style={{
               bottom: "max(2rem, env(safe-area-inset-bottom))",
               right:  "max(2rem, env(safe-area-inset-right))",
@@ -191,7 +191,7 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
               {messages.map((m: Message) => (
                 <div key={m.id} className={`flex chat-message-enter ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                   <div
-                    className={`max-w-[85%] p-3 text-sm break-words min-w-0 ${
+                    className={`max-w-[85%] p-3 text-sm wrap-break-word min-w-0 ${
                       m.role === "user"
                         ? "bg-purple-600 text-white rounded-2xl rounded-tr-sm"
                         : "bg-zinc-800/50 text-zinc-200 rounded-2xl rounded-tl-sm border border-zinc-700/50"
@@ -225,7 +225,7 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
 
               {isLoading && messages.length > 0 && messages[messages.length - 1].role === "user" && (
                 <div className="flex justify-start chat-message-enter">
-                  <div className="px-4 py-3 rounded-2xl bg-zinc-800/50 border border-zinc-700/50 flex gap-1 items-center h-[40px]" aria-label="AI is typing">
+                  <div className="px-4 py-3 rounded-2xl bg-zinc-800/50 border border-zinc-700/50 flex gap-1 items-center h-10" aria-label="AI is typing">
                     <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce" aria-hidden="true" />
                     <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce delay-75" aria-hidden="true" />
                     <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce delay-150" aria-hidden="true" />
@@ -248,7 +248,7 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
                   placeholder="Ask a question..."
                   disabled={isLoading}
                   maxLength={2000}
-                  className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-2xl py-3 pl-4 pr-12 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-white/30 transition-all disabled:opacity-50"
+                  className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-2xl py-3 pl-4 pr-12 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-white/30 transition-[box-shadow,opacity] disabled:opacity-50"
                 />
                 {input.length > 1500 && (
                   <span className={`absolute right-12 bottom-3 text-[10px] ${input.length > 1800 ? "text-red-400" : "text-zinc-500"}`}>

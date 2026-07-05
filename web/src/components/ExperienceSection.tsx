@@ -45,7 +45,7 @@ export function ExperienceSection() {
             viewport={{ once: true }}
             style={{ originY: 0 }}
             transition={{ duration: prefersReducedMotion ? 0 : 1, ease: "easeOut" }}
-            className="absolute left-3.5 top-2 bottom-2 w-px bg-gradient-to-b from-white/40 via-white/15 to-transparent"
+            className="absolute left-3.5 top-2 bottom-2 w-px bg-linear-to-b from-white/40 via-white/15 to-transparent"
           />
 
           <div className="space-y-12">
@@ -61,7 +61,7 @@ export function ExperienceSection() {
                     stiffness: 400,
                     damping: 15,
                   }}
-                  className={`absolute -left-[26px] top-1.5 w-3 h-3 rounded-full ${entry.color} ${entry.glow}`}
+                  className={`absolute -left-6.5 top-1.5 w-3 h-3 rounded-full ${entry.color} ${entry.glow}`}
                 />
 
                 <motion.div
