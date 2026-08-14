@@ -2,9 +2,6 @@
 
 import { useMemo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import dynamic from "next/dynamic";
-
-const OrbitingSkills = dynamic(() => import("@/components/ui/orbiting-skills"), { ssr: false });
 
 const SKILL_GROUPS = [
   {
@@ -84,57 +81,40 @@ export function SkillsSection() {
         <h2 className="text-3xl font-bold text-white">Tech Stack</h2>
       </motion.div>
 
-      <div className="w-full max-w-5xl flex flex-col lg:flex-row items-center lg:items-start gap-12 lg:gap-16">
+      <div className="w-full max-w-2xl space-y-8">
+        {SKILL_GROUPS.map((group, gi) => (
+          <motion.div
+            key={group.label}
+            variants={fade}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ delay: gi * 0.1 }}
+          >
+            <p className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-3">
+              {group.label}
+            </p>
 
-        <div className="order-2 lg:order-1 flex-1 w-full space-y-8">
-          {SKILL_GROUPS.map((group, gi) => (
             <motion.div
-              key={group.label}
-              variants={fade}
+              variants={stagger}
               initial="hidden"
               whileInView="show"
               viewport={{ once: true, margin: "-40px" }}
-              transition={{ delay: gi * 0.1 }}
+              className="flex flex-wrap gap-2"
             >
-              <p className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-3">
-                {group.label}
-              </p>
-
-              <motion.div
-                variants={stagger}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true, margin: "-40px" }}
-                className="flex flex-wrap gap-2"
-              >
-                {group.skills.map((skill) => (
-                  <motion.span
-                    key={skill}
-                    variants={chip}
-                    whileHover={prefersReducedMotion ? {} : { scale: 1.05, y: -1 }}
-                    className="px-3 py-1.5 rounded-full border border-white/10 bg-white/4 text-zinc-300 text-xs font-medium cursor-default select-none hover:bg-white/8 hover:border-white/20 hover:text-white transition-colors"
-                  >
-                    {skill}
-                  </motion.span>
-                ))}
-              </motion.div>
+              {group.skills.map((skill) => (
+                <motion.span
+                  key={skill}
+                  variants={chip}
+                  whileHover={prefersReducedMotion ? {} : { scale: 1.05, y: -1 }}
+                  className="px-3 py-1.5 rounded-full border border-white/10 bg-white/4 text-zinc-300 text-xs font-medium cursor-default select-none hover:bg-white/8 hover:border-white/20 hover:text-white transition-colors"
+                >
+                  {skill}
+                </motion.span>
+              ))}
             </motion.div>
-          ))}
-        </div>
-
-        {/* scale-75→100 shrinks orbit on small viewports — orbit radius overflows 300px container otherwise */}
-        <motion.div
-          variants={fade}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
-          className="order-1 lg:order-2 shrink-0 flex flex-col items-center overflow-hidden w-full lg:w-auto"
-        >
-          <div className="scale-75 sm:scale-90 md:scale-100 origin-center">
-            <OrbitingSkills />
-          </div>
-        </motion.div>
-
+          </motion.div>
+        ))}
       </div>
     </section>
   );

@@ -66,13 +66,6 @@ body {
   100% { background-position: 200% 50%; }
 }
 
-/* Required by OrbitRing inline style in orbiting-skills.tsx.
-   Tailwind only emits this keyframe when animate-pulse is used; since it isn't, we define it here. */
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
 /* touch-none (touch-action:none) is needed for the MagneticText hit area on desktop.
    On coarse-pointer (touch) devices it would block scroll through that zone — reset it. */
 @media (pointer: coarse) {

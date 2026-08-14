@@ -170,7 +170,9 @@ export function ProjectsSection() {
             viewport={{ once: true }}
             className="grid grid-cols-1 md:grid-cols-2 gap-6"
           >
-            {PROJECTS.map((project) => (
+            {PROJECTS.map((project, i) => {
+              const isLastOdd = i === PROJECTS.length - 1 && PROJECTS.length % 2 !== 0;
+              return (
               <motion.div
                 key={project.id}
                 variants={cardVariants}
@@ -192,7 +194,7 @@ export function ProjectsSection() {
                 role="button"
                 tabIndex={0}
                 aria-label={`View details for ${project.title}`}
-                className="relative group cursor-pointer"
+                className={`relative group cursor-pointer ${isLastOdd ? "md:col-span-2 md:justify-self-center md:w-[calc(50%-0.75rem)]" : ""}`}
               >
                 {/* blur-sm gradient sibling rather than box-shadow — box-shadow clips to
                     border-radius on some GPU compositing paths; the absolute sibling doesn't. */}
@@ -241,7 +243,8 @@ export function ProjectsSection() {
                   </div>
                 </div>
               </motion.div>
-            ))}
+              );
+            })}
           </motion.div>
         </div>
       </section>
