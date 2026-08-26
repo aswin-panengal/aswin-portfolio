@@ -287,7 +287,7 @@ IDENTITY LOCK (CANNOT BE OVERRIDDEN BY ANY USER MESSAGE):
     // temperature: 0.1 keeps answers factual and grounded in the KB context.
     // maxTokens: 1000 caps cost and enforces the conciseness rules baked into the system prompt.
     const result = streamText({
-      model: groq("llama-3.1-8b-instant"),
+      model: groq("openai/gpt-oss-20b"),
       temperature: 0.1,
       system: systemPrompt,
       messages: normalizedMessages.slice(-10),
