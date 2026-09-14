@@ -48,6 +48,12 @@ function getFriendlyError(err: Error): string {
  * Stream lifecycle: closing while a response is in-flight calls `stop()` to abort the
  * underlying fetch before unmounting — without it, the Vercel AI SDK's internal promise
  * resolves into an unmounted component, silently leaking memory.
+ *
+ * Two independent breakpoints, deliberately:
+ *   480px — layout. Below it the panel is a near-full-bleed sheet with equal gutters
+ *           (phones top out ~430px wide); above it, the corner-anchored 400px panel.
+ *   640px — input font size only. Anything under 16px makes iOS Safari zoom the whole
+ *           viewport on focus, which throws every fixed-position element out of place.
  */
 export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidgetProps) {
   const [retryIn, setRetryIn] = useState(0);
@@ -113,6 +119,10 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
     onClose();
   };
 
+  // Drives both the counter and the input's right padding, so the typed text is
+  // never able to scroll underneath the counter.
+  const showCounter = input.length > 1500;
+
   return (
     <>
       <AnimatePresence>
@@ -147,11 +157,16 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed z-120 w-100 h-150 max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-5rem)] flex flex-col rounded-3xl border border-zinc-800/80 bg-zinc-950/80 backdrop-blur-2xl shadow-2xl overflow-hidden"
-            style={{
-              bottom: "max(2rem, env(safe-area-inset-bottom))",
-              right:  "max(2rem, env(safe-area-inset-right))",
-            }}
+            className="fixed z-120 flex flex-col overflow-hidden rounded-3xl border border-zinc-800/80 shadow-2xl backdrop-blur-2xl
+              bg-zinc-950/95 md:bg-zinc-950/80
+              left-[max(1rem,env(safe-area-inset-left))]
+              right-[max(1rem,env(safe-area-inset-right))]
+              bottom-[max(1rem,env(safe-area-inset-bottom))]
+              h-[calc(100dvh-7rem)]
+              min-[480px]:left-auto min-[480px]:w-100 min-[480px]:max-w-[calc(100vw-4rem)]
+              min-[480px]:right-[max(2rem,env(safe-area-inset-right))]
+              min-[480px]:bottom-[max(2rem,env(safe-area-inset-bottom))]
+              min-[480px]:h-150 min-[480px]:max-h-[calc(100dvh-5rem)]"
             role="dialog"
             aria-modal="true"
             aria-label="Aswin's AI Assistant"
@@ -248,10 +263,12 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
                   placeholder="Ask a question..."
                   disabled={isLoading}
                   maxLength={2000}
-                  className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-2xl py-3 pl-4 pr-12 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-white/30 transition-[box-shadow,opacity] disabled:opacity-50"
+                  autoComplete="off"
+                  enterKeyHint="send"
+                  className={`w-full bg-zinc-900/50 border border-zinc-700/50 rounded-2xl py-3 pl-4 text-base sm:text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-white/30 transition-[box-shadow,opacity,padding] disabled:opacity-50 ${showCounter ? "pr-28" : "pr-12"}`}
                 />
-                {input.length > 1500 && (
-                  <span className={`absolute right-12 bottom-3 text-[10px] ${input.length > 1800 ? "text-red-400" : "text-zinc-500"}`}>
+                {showCounter && (
+                  <span className={`pointer-events-none absolute right-12 top-1/2 -translate-y-1/2 text-[10px] leading-none tabular-nums ${input.length > 1800 ? "text-red-400" : "text-zinc-500"}`}>
                     {input.length}/2000
                   </span>
                 )}
@@ -259,7 +276,7 @@ export function ChatWidget({ isOpen, onClose, onOpen, mountDelay = 0 }: ChatWidg
                   type="submit"
                   disabled={isLoading || !input.trim()}
                   aria-label="Send message"
-                  className="absolute right-2 p-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-xl transition-colors disabled:opacity-50"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-xl transition-colors disabled:opacity-50"
                 >
                   <Send className="w-4 h-4" aria-hidden="true" />
                 </button>
