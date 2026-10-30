@@ -10,6 +10,7 @@ import {
   Play,
   GitBranch,
   ExternalLink,
+  ArrowUpRight,
   X,
 } from "lucide-react";
 
@@ -75,10 +76,10 @@ const PROJECTS: Project[] = [
 ];
 
 /**
- * Projects grid with a Framer Motion detail modal.
+ * Project list with an animated preview and the existing detail modal.
  *
  * Three concerns run concurrently:
- *   - Card animations: staggered entrance on scroll, spring hover lift
+ *   - List interactions: hover/focus highlight and a shared screenshot preview
  *   - Modal lifecycle: AnimatePresence mount/unmount, WCAG 2.1 focus trap, Escape-to-dismiss
  *   - Image resilience: imgError resets on project change so a failed image on one card
  *     doesn't suppress the screenshot in the next modal
@@ -87,6 +88,7 @@ const PROJECTS: Project[] = [
  */
 export function ProjectsSection() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [activeProject, setActiveProject] = useState(PROJECTS[0]);
   const [imgError, setImgError] = useState(false);
   const prefersReducedMotion = useReducedMotion();
 
@@ -135,7 +137,7 @@ export function ProjectsSection() {
     visible: { transition: { staggerChildren: prefersReducedMotion ? 0 : 0.12 } },
   }), [prefersReducedMotion]);
 
-  const cardVariants = useMemo(() => ({
+  const rowVariants = useMemo(() => ({
     hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 30 },
     visible: {
       opacity: 1,
@@ -146,106 +148,128 @@ export function ProjectsSection() {
 
   return (
     <>
-      <section id="projects" className="min-h-screen flex flex-col items-center justify-center px-6 py-24 bg-black">
-        <div className="max-w-5xl w-full">
+      <section id="projects" className="min-h-[100dvh] flex flex-col items-center justify-center px-6 py-24 bg-black">
+        <div className="max-w-6xl w-full">
           <motion.div
             initial={{ opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: prefersReducedMotion ? 0 : 0.6, ease: "easeOut" }}
-            className="mb-12 text-center"
+            className="mb-10 flex flex-wrap items-end justify-between gap-4 md:mb-14"
           >
-            <div className="flex items-center gap-4 mb-4 justify-center">
-              <div className="h-px flex-1 max-w-20 bg-zinc-800" />
-              <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Featured Work</span>
-              <div className="h-px flex-1 max-w-20 bg-zinc-800" />
-            </div>
-            <h2 className="text-3xl font-bold text-white">Projects</h2>
+            <h2 className="text-4xl font-bold tracking-tight text-white md:text-5xl">Projects</h2>
+            <p className="max-w-xs text-sm leading-relaxed text-zinc-400">A selection of my work in AI and full-stack development.</p>
           </motion.div>
 
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6"
-          >
-            {PROJECTS.map((project, i) => {
-              const isLastOdd = i === PROJECTS.length - 1 && PROJECTS.length % 2 !== 0;
-              return (
-              <motion.div
-                key={project.id}
-                variants={cardVariants}
-                whileHover={{ y: prefersReducedMotion ? 0 : -6 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                onClick={(e) => {
-                  triggerRef.current = e.currentTarget as HTMLElement;
-                  setSelectedProject(project);
-                  setImgError(false);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    triggerRef.current = e.currentTarget as HTMLElement;
+          <div className="grid items-start gap-12 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="border-y border-zinc-800/80 divide-y divide-zinc-800/80"
+            >
+              {PROJECTS.map((project) => {
+                const isActive = activeProject.id === project.id;
+                return (
+                <motion.button
+                  key={project.id}
+                  type="button"
+                  variants={rowVariants}
+                  onMouseEnter={() => setActiveProject(project)}
+                  onFocus={() => setActiveProject(project)}
+                  onClick={(e) => {
+                    triggerRef.current = e.currentTarget;
                     setSelectedProject(project);
                     setImgError(false);
-                  }
-                }}
-                role="button"
-                tabIndex={0}
-                aria-label={`View details for ${project.title}`}
-                className={`relative group cursor-pointer ${isLastOdd ? "md:col-span-2 md:justify-self-center md:w-[calc(50%-0.75rem)]" : ""}`}
-              >
-                {/* blur-sm gradient sibling rather than box-shadow — box-shadow clips to
-                    border-radius on some GPU compositing paths; the absolute sibling doesn't. */}
-                <div className="absolute -inset-px rounded-3xl bg-linear-to-r from-white/8 to-white/4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm -z-10" aria-hidden="true" />
-
-                <div className="p-8 rounded-3xl border border-zinc-800/50 group-hover:border-white/20 bg-zinc-900/40 backdrop-blur-md hover:bg-zinc-900/80 transition-colors flex flex-col h-full">
-                  <span className="self-start text-[10px] font-semibold uppercase tracking-widest text-zinc-500 border border-zinc-800 rounded-full px-2.5 py-0.5 mb-4">
-                    {project.category}
+                  }}
+                  aria-label={`View details for ${project.title}`}
+                  aria-haspopup="dialog"
+                  className="relative isolate block w-full cursor-pointer px-3 py-7 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white sm:px-5 sm:py-8"
+                >
+                  {isActive && (
+                    <motion.span
+                      layoutId={prefersReducedMotion ? undefined : "project-highlight"}
+                      transition={{ type: "spring", stiffness: 380, damping: 36 }}
+                      className="absolute inset-0 -z-10 bg-white/4"
+                      aria-hidden="true"
+                    />
+                  )}
+                  <span className="flex items-start justify-between gap-5">
+                    <span className="min-w-0">
+                      <span className="mb-3 flex items-center gap-3">
+                        <project.icon className={`h-5 w-5 shrink-0 ${project.color}`} aria-hidden="true" />
+                        <span className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">{project.title}</span>
+                      </span>
+                      <span className="block max-w-md text-sm leading-relaxed text-zinc-400">{project.shortDesc}</span>
+                      <span className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2">
+                        {project.stack.slice(0, 3).map((tech) => (
+                          <span
+                            key={tech}
+                            className="text-xs text-zinc-300"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                        {project.stack.length > 3 && (
+                          <span className="text-xs text-zinc-400">
+                            +{project.stack.length - 3}
+                          </span>
+                        )}
+                      </span>
+                    </span>
+                    <motion.span
+                      animate={{
+                        x: isActive && !prefersReducedMotion ? 2 : 0,
+                        y: isActive && !prefersReducedMotion ? -2 : 0,
+                      }}
+                      transition={{ type: "spring", stiffness: 380, damping: 26 }}
+                      className={`mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${isActive ? "border-white/30 bg-white text-black" : "border-zinc-700 text-zinc-400"}`}
+                      aria-hidden="true"
+                    >
+                      <ArrowUpRight className="h-5 w-5" />
+                    </motion.span>
                   </span>
+                  <span className="mt-5 block text-xs font-medium text-zinc-300 lg:hidden">View project details</span>
+                </motion.button>
+                );
+              })}
+            </motion.div>
 
+            {/* The preview has reserved dimensions; changing projects never shifts the list. */}
+            <div className="sticky top-32 hidden min-w-0 lg:block" aria-hidden="true">
+              <div className="relative aspect-square overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/40">
+                <AnimatePresence initial={false}>
                   <motion.div
-                    whileHover={prefersReducedMotion ? {} : { rotate: 10, scale: 1.15 }}
-                    transition={{ duration: 0.2 }}
-                    className="w-fit mb-6"
-                    aria-hidden="true"
+                    key={activeProject.id}
+                    initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20, scale: prefersReducedMotion ? 1 : 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: prefersReducedMotion ? 0 : -12 }}
+                    transition={{ duration: prefersReducedMotion ? 0 : 0.35, ease: [0.16, 1, 0.3, 1] }}
+                    className="absolute inset-0 flex flex-col justify-center p-7 xl:p-9"
                   >
-                    <project.icon className={`w-8 h-8 ${project.color}`} />
-                  </motion.div>
-
-                  <h3 className="text-2xl text-white font-semibold mb-3">{project.title}</h3>
-                  <p className="text-zinc-400 mb-6 leading-relaxed grow">{project.shortDesc}</p>
-
-                  <div className="flex items-center justify-between mt-auto">
-                    <div className="flex gap-2 flex-wrap">
-                      {project.stack.slice(0, 3).map((tech) => (
-                        <span
-                          key={tech}
-                          className="text-xs px-3 py-1 bg-zinc-800/50 rounded-full text-zinc-300 border border-zinc-700/50"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                      {project.stack.length > 3 && (
-                        <span className="text-xs px-3 py-1 bg-zinc-800/50 rounded-full text-zinc-500 border border-zinc-700/50">
-                          +{project.stack.length - 3}
-                        </span>
+                    <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-zinc-950">
+                      {activeProject.image && (
+                        <Image
+                          src={activeProject.image}
+                          alt=""
+                          fill
+                          sizes="(min-width: 1280px) 420px, 360px"
+                          className="object-contain"
+                        />
                       )}
                     </div>
-
-                    <span className="text-xs text-zinc-600 group-hover:text-white transition-colors flex items-center gap-1 shrink-0 ml-3" aria-hidden="true">
-                      <span className="overflow-hidden max-w-0 group-hover:max-w-20 transition-all duration-300 whitespace-nowrap">
-                        View details
-                      </span>
-                      →
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-              );
-            })}
-          </motion.div>
+                    <div className="mt-7 flex items-center justify-between gap-4">
+                      <span className="text-lg font-medium text-white">{activeProject.title}</span>
+                      <span className="text-xs text-zinc-400">{activeProject.category}</span>
+                    </div>
+                    <p className="mt-3 text-xs leading-relaxed text-zinc-400">{activeProject.stack.join(" · ")}</p>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+              <p className="mt-5 text-center text-xs text-zinc-400">Select a project to explore the details.</p>
+            </div>
+          </div>
         </div>
       </section>
 

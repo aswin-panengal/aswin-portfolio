@@ -4,6 +4,17 @@ import { motion, useReducedMotion } from "framer-motion";
 
 const TIMELINE = [
   {
+    role: "Software Developer & AI Intern",
+    company: "JAKS & Associates",
+    location: "Kochi",
+    period: "August 2026 – Present",
+    description:
+      "Working in software development and AI as an intern at JAKS & Associates in Kochi.",
+    stack: [],
+    color: "bg-white",
+    glow: "shadow-[0_0_10px_rgba(255,255,255,0.35)]",
+  },
+  {
     role: "Freelance Web Developer",
     description:
       "Building landing pages, portfolios, SaaS UIs, and AI-powered web applications for clients. End-to-end delivery from design to deployment.",
@@ -76,9 +87,15 @@ export function ExperienceSection() {
                 >
                   <div className="mb-3">
                     <h3 className="text-lg font-semibold text-white">{entry.role}</h3>
+                    {entry.company && (
+                      <div className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-sm">
+                        <p className="text-zinc-300">{entry.company} · {entry.location}</p>
+                        <p className="text-zinc-400">{entry.period}</p>
+                      </div>
+                    )}
                   </div>
-                  <p className="text-zinc-400 text-sm leading-relaxed mb-4">{entry.description}</p>
-                  <div className="flex flex-wrap gap-2">
+                  <p className={`text-zinc-400 text-sm leading-relaxed ${entry.stack.length ? "mb-4" : ""}`}>{entry.description}</p>
+                  {entry.stack.length > 0 && <div className="flex flex-wrap gap-2">
                     {entry.stack.map((tech) => (
                       <span
                         key={tech}
@@ -87,7 +104,7 @@ export function ExperienceSection() {
                         {tech}
                       </span>
                     ))}
-                  </div>
+                  </div>}
                 </motion.div>
               </div>
             ))}

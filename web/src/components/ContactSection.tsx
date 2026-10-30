@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { Mail, GitBranch, ExternalLink, MessageCircle, Check } from "lucide-react";
+import { Mail, GitBranch, ExternalLink, MessageCircle, Check, Camera } from "lucide-react";
 
 interface ContactSectionProps {
   onOpenChat: () => void;
@@ -145,6 +145,19 @@ export function ContactSection({ onOpenChat }: ContactSectionProps) {
           >
             <GitBranch className="w-5 h-5" />
             GitHub
+          </motion.a>
+
+          <motion.a
+            variants={itemVariants}
+            whileHover={{ y: prefersReducedMotion ? 0 : -3 }}
+            whileTap={{ scale: prefersReducedMotion ? 1 : 0.95 }}
+            href="https://www.instagram.com/aswinpanengal/"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-pink-500/15 hover:border-pink-500/40 transition-colors text-white"
+          >
+            <Camera className="w-5 h-5" aria-hidden="true" />
+            Instagram
           </motion.a>
 
           <motion.a

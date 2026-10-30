@@ -66,28 +66,27 @@ export default function Portfolio() {
     <div className="bg-black text-zinc-300 font-sans selection:bg-purple-500/30 overflow-x-hidden bg-dot-grid">
 
       {/* Blobs hidden on mobile — animating blur-3xl is too expensive for mobile GPUs */}
-      {!prefersReducedMotion && (
-        <div className="hidden md:block fixed inset-0 pointer-events-none overflow-hidden z-0">
-          <motion.div
-            animate={{ x: [0, 40, -20, 30, 0], y: [0, -30, 40, -10, 0] }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-            style={{ willChange: "transform" }}
-            className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/2.5 rounded-full blur-3xl"
-          />
-          <motion.div
-            animate={{ x: [0, -50, 20, -30, 0], y: [0, 40, -20, 30, 0] }}
-            transition={{ duration: 16, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-            style={{ willChange: "transform" }}
-            className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-white/2 rounded-full blur-3xl"
-          />
-          <motion.div
-            animate={{ x: [0, 30, -40, 10, 0], y: [0, 20, -30, 40, 0] }}
-            transition={{ duration: 20, repeat: Infinity, ease: "easeInOut", delay: 4 }}
-            style={{ willChange: "transform" }}
-            className="absolute top-2/3 left-1/2 w-64 h-64 bg-white/1.5 rounded-full blur-3xl"
-          />
-        </div>
-      )}
+      {/* Keep the DOM stable during hydration; CSS handles the motion preference. */}
+      <div className="hidden md:block motion-reduce:hidden fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <motion.div
+          animate={prefersReducedMotion ? {} : { x: [0, 40, -20, 30, 0], y: [0, -30, 40, -10, 0] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          style={{ willChange: "transform" }}
+          className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/2.5 rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={prefersReducedMotion ? {} : { x: [0, -50, 20, -30, 0], y: [0, 40, -20, 30, 0] }}
+          transition={{ duration: 16, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          style={{ willChange: "transform" }}
+          className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-white/2 rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={prefersReducedMotion ? {} : { x: [0, 30, -40, 10, 0], y: [0, 20, -30, 40, 0] }}
+          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut", delay: 4 }}
+          style={{ willChange: "transform" }}
+          className="absolute top-2/3 left-1/2 w-64 h-64 bg-white/1.5 rounded-full blur-3xl"
+        />
+      </div>
 
       <NavPill activeTab={activeTab} onTabClick={scrollToSection} />
 

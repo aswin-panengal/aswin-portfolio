@@ -4,6 +4,9 @@ __pycache__/
 *.py[cod]
 *.pyo
 *.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
 # ── Environment & secrets (NEVER push these) ──────────────────────────────────
 .env
@@ -18,10 +21,13 @@ aswin_knowledge_base.md
 node_modules/
 .next/
 out/
+*.tsbuildinfo
+.vercel/
 
 # ── OS & editor ───────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+.vscode/
 *.swp
 *.swo
 
